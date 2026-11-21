@@ -1,8 +1,6 @@
 import { Route, Routes } from "react-router";
-import { ArrowLink } from "./components/brand/primitives";
 import { HowToPlay } from "./components/HowToPlay";
 import { Toaster } from "./components/Toaster";
-import { PageShell } from "./components/ui";
 import { AdminPage } from "./pages/AdminPage";
 import { CategoryPickerPage } from "./pages/CategoryPickerPage";
 import { DailyPage } from "./pages/DailyPage";
@@ -12,6 +10,7 @@ import { LocalResultsPage } from "./pages/LocalResultsPage";
 import { JoinPage } from "./pages/JoinPage";
 import { GameDetailPage } from "./pages/GameDetailPage";
 import { MyGamesPage } from "./pages/MyGamesPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
 import { NewGamePage } from "./pages/NewGamePage";
 import { RoomPage } from "./pages/RoomPage";
@@ -40,14 +39,5 @@ export function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
-  );
-}
-
-function NotFoundPage() {
-  return (
-    <PageShell title="Page not found">
-      <p className="mb-6 text-mist">That page doesn't exist.</p>
-      <ArrowLink to="/">Go home</ArrowLink>
-    </PageShell>
   );
 }
