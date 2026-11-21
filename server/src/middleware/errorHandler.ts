@@ -28,6 +28,13 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req, res, _ne
     res.status(400).json(body);
     return;
   }
+  // express.json() also throws for a body over the size limit (and a few other
+  // client mistakes). Those carry a 4xx status and are safe to pass on.
+  if (typeof error === "object" && error !== null && "type" in error && error.type === "entity.too.large") {
+    const body: ApiError = { error: "Request is too big" };
+    res.status(413).json(body);
+    return;
+  }
   // Anything else is a bug: log the details, but don't leak them to the client.
   console.error(error);
   const body: ApiError = { error: "Something went wrong on the server" };

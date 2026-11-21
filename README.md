@@ -408,6 +408,17 @@ Spotting them is the skill. A test (`server/src/seed/__tests__/seedFiles.test.ts
 every file: 40+ items, valid prices and ratings, tags, unique names and the bargain/overpriced
 counts. Ratings are a playful opinion for the game, not a real-world ranking.
 
+## Security
+
+- **Headers:** `helmet`, with a content security policy that allows only this site's own scripts,
+  styles, fonts and images, plus the Socket.io connection back to it.
+- **Rate limits** (production): 100 REST requests a minute per IP, 20 a minute on `/api/admin`
+  (password guesses). `/api/health` is never limited. Over the limit you get a `429`.
+- **Body size:** JSON bodies over 100 KB get a `413` (a 150-item custom list is about 10 KB).
+- **Sockets:** at most 10 open connections per IP at a time (a room of phones on one Wi-Fi fits).
+- Behind Render's proxy the visitor's IP comes from `X-Forwarded-For` (`trust proxy` = 1).
+  The limits are in `server/src/security.ts`.
+
 ## Known limits
 
 - **Live rooms are in memory.** Online rooms live in the server process (`RoomStore`).

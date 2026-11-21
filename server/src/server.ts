@@ -10,6 +10,7 @@ import { registerGameHandlers } from "./sockets/gameHandlers";
 import { GameRunner } from "./sockets/gameRunner";
 import { registerRoomHandlers } from "./sockets/roomHandlers";
 import type { GameServer } from "./sockets/types";
+import { limitSocketsPerIp, type SecurityLimits } from "./security";
 
 const CLEANUP_INTERVAL_MS = 60 * 1000;
 
@@ -18,6 +19,8 @@ export interface GameServerOptions {
   adminPassword: string;
   rooms?: RoomStore;
   clientDistDir?: string; // production: serve the built React app too
+  limits?: SecurityLimits; // REST and socket limits (index.ts passes PRODUCTION_LIMITS)
+  behindProxy?: boolean; // Render: the visitor's IP is in X-Forwarded-For
 }
 
 export interface RunningGameServer {
@@ -36,6 +39,8 @@ export function createGameServer(options: GameServerOptions): RunningGameServer 
     adminPassword: options.adminPassword,
     rooms,
     clientDistDir: options.clientDistDir,
+    limits: options.limits,
+    behindProxy: options.behindProxy,
   });
   const httpServer = createServer(app);
   // Same CORS rule as the API. In production the pages come from this server,
@@ -43,6 +48,10 @@ export function createGameServer(options: GameServerOptions): RunningGameServer 
   const io: GameServer = new Server(httpServer, {
     cors: { origin: options.clientUrl },
   });
+
+  if (options.limits !== undefined) {
+    limitSocketsPerIp(io, options.limits.socketsPerIp, options.behindProxy === true);
+  }
 
   const runner = new GameRunner(io, {
     loadCategory: loadCategoryForGame,

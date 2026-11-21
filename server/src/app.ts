@@ -12,6 +12,7 @@ import { dailyRouter } from "./routes/daily";
 import { leaderboardRouter } from "./routes/leaderboard";
 import { resultsRouter } from "./routes/results";
 import { renderIndexHtml } from "./linkPreview";
+import { applyRateLimits, securityHeaders, type SecurityLimits } from "./security";
 import { roomsRouter } from "./routes/rooms";
 
 export interface AppOptions {
@@ -22,6 +23,11 @@ export interface AppOptions {
   // Production only: the built React app (client/dist). The server then serves
   // the front-end too, so the API, Socket.io and the pages share one origin.
   clientDistDir?: string;
+  // Rate limits for the REST API. index.ts passes PRODUCTION_LIMITS; most
+  // tests leave them out so they can make as many requests as they like.
+  limits?: SecurityLimits;
+  // Behind a proxy (Render): use X-Forwarded-For for the visitor's IP.
+  behindProxy?: boolean;
 }
 
 export type DatabaseStatus = "disconnected" | "connected" | "connecting" | "disconnecting";
@@ -45,9 +51,17 @@ export function databaseStatus(): DatabaseStatus {
 export function createApp(options: AppOptions): Express {
   const app = express();
 
+  if (options.behindProxy === true) {
+    app.set("trust proxy", 1);
+  }
+  app.use(securityHeaders(options.clientUrl));
   // Only our own front-end may call the API from a browser.
   app.use(cors({ origin: options.clientUrl }));
+  // The biggest real request is a custom list of 150 items (~10 KB).
   app.use(express.json({ limit: "100kb" }));
+  if (options.limits !== undefined) {
+    applyRateLimits(app, options.limits);
+  }
 
   // Render's health check. "ok" means the server is up; "db" says whether
   // MongoDB is reachable right now.

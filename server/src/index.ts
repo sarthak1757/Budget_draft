@@ -1,6 +1,7 @@
 import { loadEnv } from "./config/env";
 import { connectToDatabase } from "./db/connect";
 import { CLIENT_DIST_DIR } from "./paths";
+import { PRODUCTION_LIMITS } from "./security";
 import { createGameServer } from "./server";
 
 async function main(): Promise<void> {
@@ -14,6 +15,10 @@ async function main(): Promise<void> {
     // In production the same server also serves the built React app.
     // In development Vite serves it on its own port instead.
     clientDistDir: production ? CLIENT_DIST_DIR : undefined,
+    // Only on the live site: a dev machine runs many tabs and test scripts from one IP.
+    limits: production ? PRODUCTION_LIMITS : undefined,
+    // Render puts a proxy in front of the app.
+    behindProxy: production,
   });
   server.httpServer.listen(env.PORT, () => {
     if (production) {

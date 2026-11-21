@@ -178,9 +178,11 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
   });
   // The very first connection failed (server down, wrong URL): say so instead of spinning forever.
   // Socket.io keeps retrying in the background, and "connect" will join once it works.
-  socket.on("connect_error", () => {
+  socket.on("connect_error", (error) => {
     if (get().connection === "connecting") {
-      set({ joinError: "Can't reach the game server. Check your connection and try again." });
+      // The server refuses extra connections from one network with its own message.
+      const refused = error.message.startsWith("Too many connections");
+      set({ joinError: refused ? error.message : "Can't reach the game server. Check your connection and try again." });
     }
   });
   socket.on("room:update", (room) => {
