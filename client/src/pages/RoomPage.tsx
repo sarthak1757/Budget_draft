@@ -109,6 +109,7 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
         categories={categories}
         busy={busy}
         onChangeSettings={store.updateSettings}
+        onReady={store.setReady}
         onStart={store.startGame}
         onLeave={onLeave}
       />

@@ -43,6 +43,7 @@ interface OnlineStore {
   enterRoom: (code: string, name: string) => void;
   leaveRoom: () => Promise<void>;
   updateSettings: (settings: GameSettings) => Promise<void>;
+  setReady: (ready: boolean) => Promise<void>;
   startGame: () => Promise<void>;
   rematch: () => Promise<void>;
   act: (move: TurnMove) => Promise<void>;
@@ -236,6 +237,7 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
     },
 
     updateSettings: (settings) => run(() => socket.emitWithAck("room:settings", settings)),
+    setReady: (ready) => run(() => socket.emitWithAck("room:ready", { ready })),
     startGame: () => run(() => socket.emitWithAck("game:start")),
     rematch: () => run(() => socket.emitWithAck("game:rematch")),
     act: (move) => {

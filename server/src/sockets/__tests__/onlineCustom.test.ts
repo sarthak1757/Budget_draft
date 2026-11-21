@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { CustomItem } from "@budget-draft/shared";
 import { GameResultModel } from "../../models/GameResult";
-import { buyUntilDraftEnds, join, SocketTestHarness, waitForState, type Client } from "../../test/socketTestUtils";
+import { buyUntilDraftEnds, join, SocketTestHarness, readyAll, waitForState, type Client } from "../../test/socketTestUtils";
 
 const harness = new SocketTestHarness();
 
@@ -44,6 +44,7 @@ describe("custom category rooms", () => {
     expect(await host.emitWithAck("room:settings", settings)).toEqual({ ok: true, data: null });
 
     const firstReveal = waitForState(host, (state) => state.roundNumber === 1);
+    await readyAll([host, guest]);
     expect(await host.emitWithAck("game:start")).toEqual({ ok: true, data: null });
     const state = await firstReveal;
     expect(state.settings.categorySlug).toBe("custom");

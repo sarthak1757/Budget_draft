@@ -4,6 +4,7 @@ import type {
   GameSettingsPayload,
   PeekPayload,
   ReactionPayload,
+  RoomReadyPayload,
   RoomJoinPayload,
   TurnActionPayload,
   VoteCastPayload,
@@ -14,6 +15,7 @@ export interface LobbyPlayer {
   name: string;
   isConnected: boolean;
   isHost: boolean;
+  isReady: boolean; // tapped "Ready" in the lobby
 }
 
 // Everything a client needs to draw the lobby or the game.
@@ -36,6 +38,8 @@ export interface ClientToServerEvents {
   "room:join": (payload: RoomJoinPayload, ack: Ack<{ playerId: string; room: RoomSnapshot }>) => void;
   "room:leave": (ack: Ack<null>) => void;
   "room:settings": (payload: GameSettingsPayload, ack: Ack<null>) => void;
+  // Lobby only: "I'm ready" (or not any more). The host can start once everyone is.
+  "room:ready": (payload: RoomReadyPayload, ack: Ack<null>) => void;
   "game:start": (ack: Ack<null>) => void;
   // Host only, after the game ended: same room and players, new shuffle.
   "game:rematch": (ack: Ack<null>) => void;

@@ -16,15 +16,21 @@ interface LobbyViewProps {
   categories: Category[];
   busy: boolean;
   onChangeSettings: (settings: RoomSnapshot["settings"]) => void;
+  onReady: (ready: boolean) => void;
   onStart: () => void;
   onLeave: () => void;
 }
 
-export function LobbyView({ room, playerId, categories, busy, onChangeSettings, onStart, onLeave }: LobbyViewProps) {
+export function LobbyView({ room, playerId, categories, busy, onChangeSettings, onReady, onStart, onLeave }: LobbyViewProps) {
   const [copied, setCopied] = useState(false);
   const [showingLink, setShowingLink] = useState(false);
   const isHost = room.hostId !== null && room.hostId === playerId;
-  const connectedCount = room.players.filter((player) => player.isConnected).length;
+  const connected = room.players.filter((player) => player.isConnected);
+  const connectedCount = connected.length;
+  const readyCount = connected.filter((player) => player.isReady).length;
+  const allReady = readyCount === connectedCount;
+  const me = room.players.find((player) => player.id === playerId);
+  const iAmReady = me !== undefined && me.isReady;
   const inviteLink = `${window.location.origin}/join/${room.code}`;
   const settings = room.settings;
 
@@ -98,10 +104,20 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
               <span className="display-serif text-2xl text-ivory">{player.name}</span>
               {player.id === playerId && <Label className="text-mist/80">You</Label>}
               {player.isHost && <Label className="text-gold">Host</Label>}
-              <span
-                className={`ml-auto size-2.5 rounded-full ${player.isConnected ? "bg-ivory" : "ring-1 ring-mist/60"}`}
-                aria-label={player.isConnected ? "online" : "offline"}
-              />
+              <span className="ml-auto flex items-center gap-3">
+                {player.isReady ? (
+                  <Label className="flex items-center gap-1 text-gold">
+                    <Check size={14} strokeWidth={ICON_STROKE} aria-hidden />
+                    Ready
+                  </Label>
+                ) : (
+                  <Label className="text-mist/60">Not ready</Label>
+                )}
+                <span
+                  className={`size-2.5 rounded-full ${player.isConnected ? "bg-ivory" : "ring-1 ring-mist/60"}`}
+                  aria-label={player.isConnected ? "online" : "offline"}
+                />
+              </span>
             </li>
           ))}
         </ul>
@@ -172,14 +188,25 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
         />
       </Card>
 
-      {isHost ? (
-        <PillButton className="py-4 text-lg" disabled={busy || connectedCount < 2} onClick={onStart}>
-          Start game
+      <PillButton
+        variant={iAmReady ? "secondary" : "primary"}
+        className="py-4 text-lg"
+        aria-pressed={iAmReady}
+        disabled={busy || me === undefined}
+        onClick={() => onReady(!iAmReady)}
+      >
+        {iAmReady ? "Not ready yet" : "I'm ready"}
+      </PillButton>
+      <p className="text-center" aria-live="polite">
+        <Label>
+          {readyCount} of {connectedCount} ready
+          {connectedCount >= 2 && allReady && !isHost && " · waiting for the host to start…"}
+        </Label>
+      </p>
+      {isHost && (
+        <PillButton className="py-4 text-lg" disabled={busy || connectedCount < 2 || !allReady} onClick={onStart}>
+          {allReady ? "Start game" : "Waiting for everyone to be ready"}
         </PillButton>
-      ) : (
-        <p className="text-center">
-          <Label>Waiting for the host to start…</Label>
-        </p>
       )}
       <Button variant="ghost" onClick={onLeave}>
         Leave room

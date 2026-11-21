@@ -82,10 +82,19 @@ export class SocketTestHarness {
     if (!host || !settings) throw new Error("No host");
     const ok = await host.emitWithAck("room:settings", { ...settings, ...overrides, slotCount });
     if (!ok.ok) throw new Error(ok.error);
+    await readyAll([...clients.values()]);
     const firstReveal = waitForState(host, (state) => state.roundNumber === 1);
     const started = await host.emitWithAck("game:start");
     if (!started.ok) throw new Error(started.error);
     return { code, clients, ids, host, state: await firstReveal };
+  }
+}
+
+// Everyone taps Ready (needed before the host can start).
+export async function readyAll(clients: Client[]): Promise<void> {
+  for (const client of clients) {
+    const res = await client.emitWithAck("room:ready", { ready: true });
+    if (!res.ok) throw new Error(res.error);
   }
 }
 

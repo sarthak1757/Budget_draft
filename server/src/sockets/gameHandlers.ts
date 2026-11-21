@@ -1,5 +1,5 @@
 import { peekSchema, reactionSchema, turnActionSchema, voteCastSchema, type PublicItem } from "@budget-draft/shared";
-import { findRoomPlayer, recordReaction, type Room } from "../rooms/room";
+import { everyoneReady, findRoomPlayer, recordReaction, type Room } from "../rooms/room";
 import type { SocketContext } from "./context";
 import { safeAck, type GameSocket } from "./types";
 
@@ -29,6 +29,11 @@ export function registerGameHandlers(socket: GameSocket, ctx: SocketContext): vo
     }
     if (seat.room.hostId !== seat.playerId) {
       reply({ ok: false, error: "Only the host can start the game" });
+      return;
+    }
+    // Lobby ready check. (A rematch skips it: everyone is on the results screen together.)
+    if (seat.room.game === null && !everyoneReady(seat.room)) {
+      reply({ ok: false, error: "Wait until everyone is ready" });
       return;
     }
     const result = await ctx.runner.startGame(seat.room);

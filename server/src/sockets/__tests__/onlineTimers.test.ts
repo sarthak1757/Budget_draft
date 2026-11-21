@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { GameSettings, RoomSnapshot } from "@budget-draft/shared";
-import { buyUntilDraftEnds, join, SocketTestHarness, waitForState, type Client } from "../../test/socketTestUtils";
+import { buyUntilDraftEnds, join, SocketTestHarness, readyAll, waitForState, type Client } from "../../test/socketTestUtils";
 
 // The harness plays every game with 1-second timers (so tests are quick), but
 // the lobby keeps and shows the host's choice. The timer itself firing at the
@@ -80,9 +80,10 @@ describe("online timers", () => {
   });
 
   it("are locked once the game starts, and a rematch keeps them", async () => {
-    const { host, clients, settings } = await lobbyOfTwo();
+    const { host, guest, clients, settings } = await lobbyOfTwo();
     await host.emitWithAck("room:settings", { ...settings, slotCount: 3, turnSeconds: 10 });
     const firstReveal = waitForState(host, (state) => state.roundNumber === 1);
+    await readyAll([host, guest]);
     expect(await host.emitWithAck("game:start")).toEqual({ ok: true, data: null });
     expect(await host.emitWithAck("room:settings", { ...settings, slotCount: 3, turnSeconds: 60 })).toEqual({
       ok: false,

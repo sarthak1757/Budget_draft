@@ -26,6 +26,7 @@ export interface RoomPlayer {
   id: string;
   name: string;
   isConnected: boolean;
+  isReady: boolean; // lobby ready check
 }
 
 export interface Room {
@@ -86,6 +87,8 @@ export function applyRoomSettings(room: Room, settings: GameSettings, timers: On
     bidSeconds: timers.bidSeconds,
     voteSeconds: timers.voteSeconds,
   };
+  // New rules: everyone has to look again and say they're ready.
+  resetReady(room);
 }
 
 // The settings a new game (or rematch) starts with.
@@ -94,6 +97,24 @@ export function settingsForGame(room: Room): GameSettings {
     return room.settings;
   }
   return { ...room.settings, ...room.timerOverride };
+}
+
+// Ready check. Everyone has to tap Ready again after anything changes.
+export function resetReady(room: Room): void {
+  for (const player of room.players) {
+    player.isReady = false;
+  }
+}
+
+// True when every connected player is ready. (Players who dropped out of
+// the lobby don't get a seat, so they don't hold the game up.)
+export function everyoneReady(room: Room): boolean {
+  for (const player of room.players) {
+    if (player.isConnected && !player.isReady) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function findRoomPlayer(room: Room, playerId: string): RoomPlayer | undefined {
@@ -135,7 +156,9 @@ export function addPlayer(room: Room, player: { id: string; name: string }, now:
       return `Someone called "${existing.name}" is already here. Pick another name.`;
     }
   }
-  room.players.push({ id: player.id, name: player.name, isConnected: true });
+  room.players.push({ id: player.id, name: player.name, isConnected: true, isReady: false });
+  // Someone new: everyone checks the room again before starting.
+  resetReady(room);
   markConnectedChange(room, now);
   if (room.hostId === null) {
     room.hostId = player.id;
@@ -216,6 +239,7 @@ export function toRoomSnapshot(room: Room): RoomSnapshot {
       name: player.name,
       isConnected: player.isConnected,
       isHost: player.id === room.hostId,
+      isReady: player.isReady,
     });
   }
   return {
