@@ -34,8 +34,9 @@ export function JoinPage() {
       // Check before connecting so we can give a clear message.
       const info = await apiRequest<RoomInfo>(`/api/rooms/${parsedCode.data}`);
       const isReturning = getStoredPlayerId(parsedCode.data) !== undefined;
-      if (!info.joinable && !isReturning) {
-        setError(info.phase === "lobby" ? "That room is full" : "That game has already started");
+      // A game in progress can still be watched (and joined on Rematch).
+      if (!info.joinable && !info.watchable && !isReturning) {
+        setError("That room is full");
         setChecking(false);
         return;
       }

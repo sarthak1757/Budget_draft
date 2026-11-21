@@ -2,6 +2,8 @@ import type { GameSettings } from "../types/game";
 
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 4;
+// People watching an online game that started before they arrived.
+export const MAX_SPECTATORS = 8;
 export const MIN_SLOTS = 3;
 export const MAX_SLOTS = 7;
 export const MIN_PRICE = 1;

@@ -2,6 +2,7 @@ import {
   CUSTOM_CATEGORY_SLUG,
   DEFAULT_SETTINGS,
   MAX_PLAYERS,
+  MAX_SPECTATORS,
   ONLINE_BID_SECONDS,
   ONLINE_TURN_SECONDS,
   ONLINE_VOTE_SECONDS,
@@ -16,6 +17,7 @@ import {
   type OnlineTimers,
   type RoomInfo,
   type RoomSnapshot,
+  type Spectator,
 } from "@budget-draft/shared";
 
 // One online room. Lives only in server memory (see README: lost on restart).
@@ -33,6 +35,7 @@ export interface Room {
   code: string;
   hostId: string | null;
   players: RoomPlayer[]; // in join order
+  spectators: Spectator[]; // joined mid-game; seated on Rematch
   settings: GameSettings; // includes the host's timers (presets only, checked on the way in)
   // Players the host removed. Their stored id can't get back in.
   kickedIds: Set<string>;
@@ -60,6 +63,7 @@ export function createRoom(
     code,
     hostId: null, // the first player to join becomes host
     players: [],
+    spectators: [],
     settings: {
       ...DEFAULT_SETTINGS,
       categorySlug,
@@ -129,6 +133,67 @@ export function findRoomPlayer(room: Room, playerId: string): RoomPlayer | undef
   return undefined;
 }
 
+// ---- Spectators ----
+
+export function findSpectator(room: Room, id: string): Spectator | undefined {
+  for (const spectator of room.spectators) {
+    if (spectator.id === id) {
+      return spectator;
+    }
+  }
+  return undefined;
+}
+
+function nameTaken(room: Room, name: string): string | null {
+  const lower = name.toLowerCase();
+  for (const person of [...room.players, ...room.spectators]) {
+    if (person.name.toLowerCase() === lower) {
+      return person.name;
+    }
+  }
+  return null;
+}
+
+// Someone arriving after the game started. Returns an error message, or null.
+export function addSpectator(room: Room, spectator: { id: string; name: string }): string | null {
+  if (room.spectators.length >= MAX_SPECTATORS) {
+    return "This room is full";
+  }
+  const taken = nameTaken(room, spectator.name);
+  if (taken !== null) {
+    return `Someone called "${taken}" is already here. Pick another name.`;
+  }
+  room.spectators.push({ id: spectator.id, name: spectator.name, isConnected: true });
+  return null;
+}
+
+export function setSpectatorConnected(room: Room, id: string, isConnected: boolean): void {
+  const spectator = findSpectator(room, id);
+  if (spectator) {
+    spectator.isConnected = isConnected;
+  }
+}
+
+export function removeSpectator(room: Room, id: string): void {
+  room.spectators = room.spectators.filter((spectator) => spectator.id !== id);
+}
+
+// Before a rematch: connected spectators take the free seats, in the order
+// they arrived. Whoever doesn't fit keeps watching.
+export function seatSpectators(room: Room): void {
+  let seats = MAX_PLAYERS - countConnected(room);
+  const stillWatching: Spectator[] = [];
+  for (const spectator of room.spectators) {
+    if (spectator.isConnected && seats > 0) {
+      room.players.push({ id: spectator.id, name: spectator.name, isConnected: true, isReady: false });
+      seats -= 1;
+    } else if (spectator.isConnected) {
+      stillWatching.push(spectator);
+    }
+  }
+  room.spectators = stillWatching;
+}
+
 export function countConnected(room: Room): number {
   let connected = 0;
   for (const player of room.players) {
@@ -154,10 +219,9 @@ export function addPlayer(room: Room, player: { id: string; name: string }, now:
   if (room.players.length >= MAX_PLAYERS) {
     return "This room is full";
   }
-  for (const existing of room.players) {
-    if (existing.name.toLowerCase() === player.name.toLowerCase()) {
-      return `Someone called "${existing.name}" is already here. Pick another name.`;
-    }
+  const taken = nameTaken(room, player.name);
+  if (taken !== null) {
+    return `Someone called "${taken}" is already here. Pick another name.`;
   }
   room.players.push({ id: player.id, name: player.name, isConnected: true, isReady: false });
   // Someone new: everyone checks the room again before starting.
@@ -249,6 +313,7 @@ export function toRoomSnapshot(room: Room): RoomSnapshot {
     code: room.code,
     hostId: room.hostId,
     players,
+    spectators: room.spectators.map((spectator) => ({ ...spectator })),
     settings: room.settings,
     // Always strip the pool. The RoomSnapshot type wouldn't accept the full state anyway.
     game: room.game === null ? null : toPublicState(room.game),
@@ -265,6 +330,7 @@ export function toRoomInfo(room: Room): RoomInfo {
     playerCount: room.players.length,
     maxPlayers: MAX_PLAYERS,
     joinable: room.game === null && room.players.length < MAX_PLAYERS,
+    watchable: room.game !== null && room.spectators.length < MAX_SPECTATORS,
   };
 }
 

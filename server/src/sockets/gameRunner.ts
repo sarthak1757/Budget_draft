@@ -16,7 +16,7 @@ import {
   type PublicItem,
   type TurnActionPayload,
 } from "@budget-draft/shared";
-import { settingsForGame, toRoomSnapshot, type Room } from "../rooms/room";
+import { seatSpectators, settingsForGame, toRoomSnapshot, type Room } from "../rooms/room";
 import type { GameServer } from "./types";
 
 export interface GameRunnerDeps {
@@ -99,12 +99,19 @@ export class GameRunner {
     }
     const oldResults = room.results;
     const oldResultSaved = room.resultSaved;
+    const oldPlayers = room.players;
+    const oldSpectators = room.spectators;
+    // People who watched this game get a seat in the next one.
+    room.players = [...room.players];
+    seatSpectators(room);
     room.game = null;
     room.results = null;
     room.resultSaved = false;
     const result = await this.startGame(room);
     if (!result.ok) {
       room.game = oldGame;
+      room.players = oldPlayers;
+      room.spectators = oldSpectators;
       room.results = oldResults;
       room.resultSaved = oldResultSaved;
     }

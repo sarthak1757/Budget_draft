@@ -19,12 +19,21 @@ export interface LobbyPlayer {
   isReady: boolean; // tapped "Ready" in the lobby
 }
 
+// Someone who joined after the game started. They watch the same public
+// board as the players (no pool, no hidden ratings) and get a seat on Rematch.
+export interface Spectator {
+  id: string;
+  name: string;
+  isConnected: boolean;
+}
+
 // Everything a client needs to draw the lobby or the game.
 // `game` is PublicGameState, so a full GameState (with the pool) can't be put here.
 export interface RoomSnapshot {
   code: string;
   hostId: string | null; // null mid-game if the host left (the game keeps running)
   players: LobbyPlayer[];
+  spectators: Spectator[];
   settings: GameSettings;
   game: PublicGameState | null;
   results: GameResults | null;

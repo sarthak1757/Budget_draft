@@ -1,4 +1,4 @@
-import { RotateCcw } from "lucide-react";
+import { Eye, RotateCcw } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import { getCurrentPlayerId, type PublicPlayerState, type RoomSnapshot } from "@budget-draft/shared";
@@ -90,7 +90,7 @@ export function RoomPage() {
           <UrgentNote>{store.actionError}</UrgentNote>
         </p>
       )}
-      {room.game !== null && (
+      {room.game !== null && !isSpectator(room, store.playerId) && (
         <div className="mt-6">
           <ReactionBar onReact={store.react} />
         </div>
@@ -131,6 +131,7 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
   }
 
   const me: PublicPlayerState | undefined = game.players.find((player) => player.id === playerId);
+  const watching = isSpectator(room, playerId);
 
   if (game.phase === "finished") {
     const isHost = room.hostId === playerId;
@@ -159,7 +160,13 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
         ) : (
           <Spinner />
         )}
-        {!isHost && <p className="mt-6 text-sm text-mist">The host can start a rematch with everyone here.</p>}
+        {!isHost && (
+          <p className="mt-6 text-sm text-mist">
+            {watching
+              ? "You'll get a seat in the next game when the host starts a rematch."
+              : "The host can start a rematch with everyone here."}
+          </p>
+        )}
       </>
     );
   }
@@ -192,12 +199,13 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
   if (isMyTurn) {
     turnLabel = "It's your turn";
   } else if (current) {
-    turnLabel = `Waiting for ${current.name}…`;
+    turnLabel = watching ? `${current.name}'s turn` : `Waiting for ${current.name}…`;
   }
 
   return (
     <>
       <TurnAlert isMyTurn={isMyTurn} />
+      {watching && <WatchingBanner />}
       <GameBoard
         state={game}
         viewerId={playerId}
@@ -210,10 +218,25 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
       />
       <div className="mt-6 text-center">
         <Button variant="ghost" className="py-2 text-sm" onClick={onLeave}>
-          Leave game
+          {watching ? "Stop watching" : "Leave game"}
         </Button>
       </div>
     </>
+  );
+}
+
+function isSpectator(room: RoomSnapshot, playerId: string | null): boolean {
+  return playerId !== null && room.spectators.some((spectator) => spectator.id === playerId);
+}
+
+function WatchingBanner() {
+  return (
+    <div className="mb-4 flex items-center gap-3 rounded-2xl bg-ink-raised px-4 py-3 ring-1 ring-mist/15" role="status">
+      <Eye size={16} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-hidden />
+      <p className="text-sm text-mist">
+        <span className="text-ivory">You're watching.</span> You'll get a seat when the host starts a rematch.
+      </p>
+    </div>
   );
 }
 

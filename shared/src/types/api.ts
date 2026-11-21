@@ -17,6 +17,7 @@ export interface RoomInfo {
   playerCount: number;
   maxPlayers: number;
   joinable: boolean; // false once the game has started or the room is full
+  watchable: boolean; // the game has started and there's room to watch it
 }
 
 export interface LeaderboardEntry {

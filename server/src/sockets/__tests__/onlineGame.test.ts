@@ -74,11 +74,13 @@ describe("online game over Socket.io", () => {
     expect(benInGame?.isConnected).toBe(true);
   });
 
-  it("refuses new players once the game has started", async () => {
+  it("seats nobody new once the game has started (they watch instead)", async () => {
     const { code } = await harness.startGame(["Asha", "Ben"]);
     const late = await harness.newClient();
     const res = await late.emitWithAck("room:join", { code, playerName: "Late" });
-    expect(res).toEqual({ ok: false, error: "This game has already started" });
+    if (!res.ok) throw new Error(res.error);
+    expect(res.data.room.game?.players.map((p) => p.name)).toEqual(["Asha", "Ben"]);
+    expect(res.data.room.spectators.map((s) => s.name)).toEqual(["Late"]);
   });
 
   it("passes host to the next player when the host leaves the lobby", async () => {

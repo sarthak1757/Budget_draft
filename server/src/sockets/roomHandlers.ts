@@ -3,9 +3,13 @@ import { gameSettingsSchema, onlineTimersSchema, roomJoinSchema, roomReadySchema
 import {
   addPlayer,
   applyRoomSettings,
+  addSpectator,
   findRoomPlayer,
+  findSpectator,
   markPlayerConnected,
   removePlayer,
+  removeSpectator,
+  setSpectatorConnected,
   toRoomSnapshot,
   type Room,
 } from "../rooms/room";
@@ -39,10 +43,22 @@ export function registerRoomHandlers(socket: GameSocket, ctx: SocketContext): vo
 
     let joinedId: string;
     const returning = playerId === undefined ? undefined : findRoomPlayer(room, playerId);
+    const returningSpectator = playerId === undefined ? undefined : findSpectator(room, playerId);
     if (returning) {
       // Reconnect: same seat, same team. The stored id is the only "login" we have.
       joinedId = returning.id;
       markPlayerConnected(room, joinedId, true, ctx.now());
+    } else if (returningSpectator) {
+      joinedId = returningSpectator.id;
+      setSpectatorConnected(room, joinedId, true);
+    } else if (room.game !== null) {
+      // The game already started: watch it, and play from the next rematch.
+      joinedId = randomUUID();
+      const error = addSpectator(room, { id: joinedId, name: playerName });
+      if (error !== null) {
+        reply({ ok: false, error });
+        return;
+      }
     } else {
       joinedId = randomUUID();
       const error = addPlayer(room, { id: joinedId, name: playerName }, ctx.now());
@@ -184,7 +200,11 @@ export function registerRoomHandlers(socket: GameSocket, ctx: SocketContext): vo
       return;
     }
     // Keep their seat (lobby and game) so they can reconnect with their stored id.
-    markPlayerConnected(room, playerId, false, ctx.now());
+    if (findSpectator(room, playerId)) {
+      setSpectatorConnected(room, playerId, false);
+    } else {
+      markPlayerConnected(room, playerId, false, ctx.now());
+    }
     ctx.runner.broadcastRoom(room);
   });
 }
@@ -205,7 +225,9 @@ function leaveCurrentRoom(socket: GameSocket, ctx: SocketContext): void {
   if (!room) {
     return;
   }
-  if (room.game === null) {
+  if (findSpectator(room, playerId)) {
+    removeSpectator(room, playerId);
+  } else if (room.game === null) {
     removePlayer(room, playerId, ctx.now());
   } else {
     markPlayerConnected(room, playerId, false, ctx.now());
