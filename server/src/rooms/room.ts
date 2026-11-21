@@ -34,6 +34,8 @@ export interface Room {
   hostId: string | null;
   players: RoomPlayer[]; // in join order
   settings: GameSettings; // includes the host's timers (presets only, checked on the way in)
+  // Players the host removed. Their stored id can't get back in.
+  kickedIds: Set<string>;
   // Tests only: play every game with these short timers instead of the host's.
   timerOverride: OnlineTimers | null;
   // The host's own list (custom category), or null for a normal category.
@@ -66,6 +68,7 @@ export function createRoom(
       voteSeconds: ONLINE_VOTE_SECONDS,
     },
     timerOverride,
+    kickedIds: new Set(),
     customItems,
     game: null,
     results: null,

@@ -44,6 +44,18 @@ export function RoomPage() {
     navigate("/");
   }
 
+  if (store.kicked) {
+    return (
+      <PageShell title="You were removed" backTo="/">
+        <p className="text-mist">The host removed you from room {code}. You can start your own game or join another room.</p>
+        <div className="mt-8 grid gap-3 sm:max-w-sm">
+          <Button onClick={handleLeave}>Back to home</Button>
+          <ArrowLink to="/join">Join another room</ArrowLink>
+        </div>
+      </PageShell>
+    );
+  }
+
   if (store.joinError !== null) {
     return (
       <PageShell title="Couldn't join" backTo="/">
@@ -110,6 +122,8 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
         busy={busy}
         onChangeSettings={store.updateSettings}
         onReady={store.setReady}
+        onKick={store.kick}
+        onMakeHost={store.makeHost}
         onStart={store.startGame}
         onLeave={onLeave}
       />

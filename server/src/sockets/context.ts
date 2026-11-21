@@ -17,6 +17,10 @@ export class PlayerConnections {
     sockets.add(socketId);
   }
 
+  socketsOf(playerId: string): string[] {
+    return [...(this.socketsByPlayer.get(playerId) ?? [])];
+  }
+
   // Returns how many sockets the player still has open.
   remove(playerId: string, socketId: string): number {
     const sockets = this.socketsByPlayer.get(playerId);

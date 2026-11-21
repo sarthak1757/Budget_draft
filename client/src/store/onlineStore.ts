@@ -39,11 +39,14 @@ interface OnlineStore {
   busy: boolean;
   peeked: PeekedItem | null;
   reactions: Reaction[]; // currently floating on screen
+  kicked: boolean; // the host removed this player from the lobby
 
   enterRoom: (code: string, name: string) => void;
   leaveRoom: () => Promise<void>;
   updateSettings: (settings: GameSettings) => Promise<void>;
   setReady: (ready: boolean) => Promise<void>;
+  kick: (playerId: string) => Promise<void>;
+  makeHost: (playerId: string) => Promise<void>;
   startGame: () => Promise<void>;
   rematch: () => Promise<void>;
   act: (move: TurnMove) => Promise<void>;
@@ -181,6 +184,12 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
       set({ room });
     }
   });
+  // The host removed us. The stored id stays, so the server keeps refusing it.
+  socket.on("room:kicked", ({ code }) => {
+    if (get().code === code) {
+      set({ kicked: true, room: null, reactions: [] });
+    }
+  });
   socket.on("game:state", (game) => {
     const room = get().room;
     if (room) set({ room: { ...room, game } });
@@ -211,11 +220,12 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
     busy: false,
     peeked: null,
     reactions: [],
+    kicked: false,
 
     enterRoom: (code, name) => {
       const upper = code.toUpperCase();
       storeName(name);
-      set({ code: upper, name, room: null, joinError: null, actionError: null, connection: "connecting" });
+      set({ code: upper, name, room: null, joinError: null, actionError: null, kicked: false, connection: "connecting" });
       if (socket.connected) {
         void sendJoin();
       } else {
@@ -233,11 +243,13 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
       }
       socket.disconnect();
       droppedConnection = false;
-      set({ code: null, playerId: null, room: null, connection: "idle", joinError: null, reactions: [] });
+      set({ code: null, playerId: null, room: null, connection: "idle", joinError: null, reactions: [], kicked: false });
     },
 
     updateSettings: (settings) => run(() => socket.emitWithAck("room:settings", settings)),
     setReady: (ready) => run(() => socket.emitWithAck("room:ready", { ready })),
+    kick: (playerId) => run(() => socket.emitWithAck("room:kick", { playerId })),
+    makeHost: (playerId) => run(() => socket.emitWithAck("room:makeHost", { playerId })),
     startGame: () => run(() => socket.emitWithAck("game:start")),
     rematch: () => run(() => socket.emitWithAck("game:rematch")),
     act: (move) => {

@@ -98,6 +98,9 @@ export const reactionSchema = z.object({ emoji: z.enum(REACTION_EMOJIS) });
 
 export const roomReadySchema = z.object({ ready: z.boolean() });
 
+// Host controls in the lobby: the player to kick, or to hand host to.
+export const roomTargetSchema = z.object({ playerId: playerIdSchema });
+
 export const peekSchema = z.object({ roundNumber: roundNumberSchema });
 
 // ---- REST payloads ----
@@ -245,6 +248,7 @@ export type RoomJoinPayload = z.infer<typeof roomJoinSchema>;
 export type TurnActionPayload = z.infer<typeof turnActionSchema>;
 export type ReactionPayload = z.infer<typeof reactionSchema>;
 export type RoomReadyPayload = z.infer<typeof roomReadySchema>;
+export type RoomTargetPayload = z.infer<typeof roomTargetSchema>;
 export type PeekPayload = z.infer<typeof peekSchema>;
 export type CreateRoomPayload = z.infer<typeof createRoomSchema>;
 export type VoteCastPayload = z.infer<typeof voteCastSchema>;

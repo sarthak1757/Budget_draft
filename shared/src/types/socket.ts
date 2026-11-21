@@ -5,6 +5,7 @@ import type {
   PeekPayload,
   ReactionPayload,
   RoomReadyPayload,
+  RoomTargetPayload,
   RoomJoinPayload,
   TurnActionPayload,
   VoteCastPayload,
@@ -40,6 +41,9 @@ export interface ClientToServerEvents {
   "room:settings": (payload: GameSettingsPayload, ack: Ack<null>) => void;
   // Lobby only: "I'm ready" (or not any more). The host can start once everyone is.
   "room:ready": (payload: RoomReadyPayload, ack: Ack<null>) => void;
+  // Host only, lobby only.
+  "room:kick": (payload: RoomTargetPayload, ack: Ack<null>) => void;
+  "room:makeHost": (payload: RoomTargetPayload, ack: Ack<null>) => void;
   "game:start": (ack: Ack<null>) => void;
   // Host only, after the game ended: same room and players, new shuffle.
   "game:rematch": (ack: Ack<null>) => void;
@@ -59,6 +63,8 @@ export interface Reaction {
 
 export interface ServerToClientEvents {
   "room:update": (room: RoomSnapshot) => void;
+  // Sent only to a player the host removed from the lobby.
+  "room:kicked": (payload: { code: string }) => void;
   "item:reveal": (payload: { item: PublicItem; state: PublicGameState }) => void;
   "game:state": (state: PublicGameState) => void;
   "game:end": (payload: { state: PublicGameState; results: GameResults }) => void;

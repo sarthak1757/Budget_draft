@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { gameSettingsSchema, onlineTimersSchema, roomJoinSchema, roomReadySchema, type RoomSnapshot } from "@budget-draft/shared";
+import { gameSettingsSchema, onlineTimersSchema, roomJoinSchema, roomReadySchema, roomTargetSchema, type RoomSnapshot } from "@budget-draft/shared";
 import {
   addPlayer,
   applyRoomSettings,
@@ -7,6 +7,7 @@ import {
   markPlayerConnected,
   removePlayer,
   toRoomSnapshot,
+  type Room,
 } from "../rooms/room";
 import type { SocketContext } from "./context";
 import { safeAck, type GameSocket } from "./types";
@@ -29,6 +30,11 @@ export function registerRoomHandlers(socket: GameSocket, ctx: SocketContext): vo
     // Joining a different room means leaving the current one first.
     if (socket.data.roomCode !== undefined && socket.data.roomCode !== room.code) {
       leaveCurrentRoom(socket, ctx);
+    }
+
+    if (playerId !== undefined && room.kickedIds.has(playerId)) {
+      reply({ ok: false, error: "The host removed you from this room" });
+      return;
     }
 
     let joinedId: string;
@@ -118,6 +124,52 @@ export function registerRoomHandlers(socket: GameSocket, ctx: SocketContext): vo
     ctx.runner.broadcastRoom(room);
   });
 
+  socket.on("room:kick", (payload, ack) => {
+    const reply = safeAck<null>(ack);
+    const check = hostLobbyTarget(socket, ctx, payload);
+    if (typeof check === "string") {
+      reply({ ok: false, error: check });
+      return;
+    }
+    const { room, targetId } = check;
+    if (targetId === socket.data.playerId) {
+      reply({ ok: false, error: "You can't remove yourself. Use Leave room." });
+      return;
+    }
+    room.kickedIds.add(targetId);
+    removePlayer(room, targetId, ctx.now());
+    // Tell their open tabs, and take those sockets out of the room.
+    for (const socketId of ctx.connections.socketsOf(targetId)) {
+      ctx.connections.remove(targetId, socketId);
+      const kicked = ctx.io.sockets.sockets.get(socketId);
+      if (kicked) {
+        kicked.data.roomCode = undefined;
+        kicked.data.playerId = undefined;
+        void kicked.leave(room.code);
+        kicked.emit("room:kicked", { code: room.code });
+      }
+    }
+    reply({ ok: true, data: null });
+    ctx.runner.broadcastRoom(room);
+  });
+
+  socket.on("room:makeHost", (payload, ack) => {
+    const reply = safeAck<null>(ack);
+    const check = hostLobbyTarget(socket, ctx, payload);
+    if (typeof check === "string") {
+      reply({ ok: false, error: check });
+      return;
+    }
+    const target = findRoomPlayer(check.room, check.targetId);
+    if (!target || !target.isConnected) {
+      reply({ ok: false, error: "They're offline right now" });
+      return;
+    }
+    check.room.hostId = target.id;
+    reply({ ok: true, data: null });
+    ctx.runner.broadcastRoom(check.room);
+  });
+
   socket.on("disconnect", () => {
     const { roomCode, playerId } = socket.data;
     if (roomCode === undefined || playerId === undefined) {
@@ -159,4 +211,27 @@ function leaveCurrentRoom(socket: GameSocket, ctx: SocketContext): void {
     markPlayerConnected(room, playerId, false, ctx.now());
   }
   ctx.runner.broadcastRoom(room);
+}
+
+// Shared checks for the host's lobby controls (kick, hand over host).
+// Returns the room and the target's id, or an error message.
+function hostLobbyTarget(socket: GameSocket, ctx: SocketContext, payload: unknown): { room: Room; targetId: string } | string {
+  const parsed = roomTargetSchema.safeParse(payload);
+  if (!parsed.success) {
+    return "Invalid player";
+  }
+  const room = socket.data.roomCode === undefined ? undefined : ctx.rooms.get(socket.data.roomCode);
+  if (!room) {
+    return "You're not in a room";
+  }
+  if (room.hostId !== socket.data.playerId) {
+    return "Only the host can do that";
+  }
+  if (room.game !== null) {
+    return "Only in the lobby";
+  }
+  if (!findRoomPlayer(room, parsed.data.playerId)) {
+    return "That player isn't in this room";
+  }
+  return { room, targetId: parsed.data.playerId };
 }

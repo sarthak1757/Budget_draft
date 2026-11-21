@@ -1,4 +1,4 @@
-import { Check, Share2 } from "lucide-react";
+import { Check, Crown, Share2, UserX } from "lucide-react";
 import { useState } from "react";
 import { MAX_PLAYERS, MAX_SLOTS, MIN_HUMANS_FOR_VOTE, MIN_SLOTS, type Category, type RoomSnapshot } from "@budget-draft/shared";
 import { isTouchDevice } from "../lib/useMediaQuery";
@@ -17,11 +17,15 @@ interface LobbyViewProps {
   busy: boolean;
   onChangeSettings: (settings: RoomSnapshot["settings"]) => void;
   onReady: (ready: boolean) => void;
+  onKick: (playerId: string) => void;
+  onMakeHost: (playerId: string) => void;
   onStart: () => void;
   onLeave: () => void;
 }
 
-export function LobbyView({ room, playerId, categories, busy, onChangeSettings, onReady, onStart, onLeave }: LobbyViewProps) {
+export function LobbyView({ room, playerId, categories, busy, onChangeSettings, onReady, onKick, onMakeHost, onStart, onLeave }: LobbyViewProps) {
+  // The player whose host controls (Make host / Remove) are open.
+  const [managingId, setManagingId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showingLink, setShowingLink] = useState(false);
   const isHost = room.hostId !== null && room.hostId === playerId;
@@ -31,6 +35,7 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
   const allReady = readyCount === connectedCount;
   const me = room.players.find((player) => player.id === playerId);
   const iAmReady = me !== undefined && me.isReady;
+  const managing = room.players.find((player) => player.id === managingId);
   const inviteLink = `${window.location.origin}/join/${room.code}`;
   const settings = room.settings;
 
@@ -99,30 +104,48 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
         </CardTitle>
         <ul className="grid gap-4">
           {room.players.map((player) => (
-            <li key={player.id} className="flex items-center gap-3">
-              <Avatar name={player.name} />
-              <span className="display-serif text-2xl text-ivory">{player.name}</span>
-              {player.id === playerId && <Label className="text-mist/80">You</Label>}
-              {player.isHost && <Label className="text-gold">Host</Label>}
-              <span className="ml-auto flex items-center gap-3">
-                {player.isReady ? (
-                  <Label className="flex items-center gap-1 text-gold">
-                    <Check size={14} strokeWidth={ICON_STROKE} aria-hidden />
-                    Ready
-                  </Label>
-                ) : (
-                  <Label className="text-mist/60">Not ready</Label>
-                )}
-                <span
-                  className={`size-2.5 rounded-full ${player.isConnected ? "bg-ivory" : "ring-1 ring-mist/60"}`}
-                  aria-label={player.isConnected ? "online" : "offline"}
-                />
-              </span>
+            <li key={player.id}>
+              <LobbyPlayerRow
+                player={player}
+                isMe={player.id === playerId}
+                // The host can manage everyone else.
+                onManage={isHost && player.id !== playerId ? () => setManagingId(player.id) : null}
+              />
             </li>
           ))}
         </ul>
         {room.players.length < 2 && <p className="mt-4 text-sm text-mist">Waiting for at least one more player…</p>}
+        {isHost && room.players.length > 1 && <p className="text-sm text-mist">Tap a player to make them host or remove them.</p>}
       </Card>
+      <Sheet open={managing !== undefined} onClose={() => setManagingId(null)} title={managing ? managing.name : "Player"}>
+        {managing && (
+          <div className="grid gap-3">
+            <Button
+              variant="secondary"
+              disabled={busy || !managing.isConnected}
+              onClick={() => {
+                onMakeHost(managing.id);
+                setManagingId(null);
+              }}
+            >
+              <Crown size={16} strokeWidth={ICON_STROKE} className="mr-2 inline" aria-hidden />
+              {managing.isConnected ? "Make host" : "Make host (offline)"}
+            </Button>
+            <Button
+              variant="danger"
+              disabled={busy}
+              onClick={() => {
+                onKick(managing.id);
+                setManagingId(null);
+              }}
+            >
+              <UserX size={16} strokeWidth={ICON_STROKE} className="mr-2 inline" aria-hidden />
+              Remove from room
+            </Button>
+            <p className="text-sm text-mist">A removed player can't come back into this room.</p>
+          </div>
+        )}
+      </Sheet>
 
       <Card className="grid gap-5">
         <CardTitle>Settings{!isHost && " · host decides"}</CardTitle>
@@ -212,5 +235,49 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
         Leave room
       </Button>
     </div>
+  );
+}
+
+interface LobbyPlayerRowProps {
+  player: RoomSnapshot["players"][number];
+  isMe: boolean;
+  onManage: (() => void) | null; // set for the host, on everyone else's row
+}
+
+function LobbyPlayerRow({ player, isMe, onManage }: LobbyPlayerRowProps) {
+  const content = (
+    <>
+      <Avatar name={player.name} />
+      <span className="display-serif min-w-0 truncate text-2xl text-ivory">{player.name}</span>
+      {isMe && <Label className="shrink-0 text-mist/80">You</Label>}
+      {player.isHost && <Label className="shrink-0 text-gold">Host</Label>}
+      <span className="ml-auto flex shrink-0 items-center gap-3">
+        {player.isReady ? (
+          <Label className="flex items-center gap-1 text-gold">
+            <Check size={14} strokeWidth={ICON_STROKE} aria-hidden />
+            Ready
+          </Label>
+        ) : (
+          <Label className="text-mist/60">Not ready</Label>
+        )}
+        <span
+          className={`size-2.5 rounded-full ${player.isConnected ? "bg-ivory" : "ring-1 ring-mist/60"}`}
+          aria-label={player.isConnected ? "online" : "offline"}
+        />
+      </span>
+    </>
+  );
+  if (onManage === null) {
+    return <div className="flex min-h-11 items-center gap-3">{content}</div>;
+  }
+  return (
+    <button
+      type="button"
+      onClick={onManage}
+      aria-label={`Manage ${player.name}`}
+      className="-mx-2 flex min-h-11 w-[calc(100%+1rem)] items-center gap-3 rounded-2xl px-2 text-left transition hover:bg-ink-hover"
+    >
+      {content}
+    </button>
   );
 }
