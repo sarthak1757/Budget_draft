@@ -26,7 +26,7 @@ describe("GET /api/categories", () => {
   it("lists every seeded category with item counts", async () => {
     const res = await request(app).get("/api/categories");
     expect(res.status).toBe(200);
-    expect(res.body.length).toBe(10);
+    expect(res.body.length).toBe(12);
     const football = res.body.find((c: { slug: string }) => c.slug === "football");
     expect(football.itemCount).toBeGreaterThanOrEqual(40);
   });

@@ -1,0 +1,321 @@
+{
+  "slug": "indian-street-food",
+  "name": "Indian Street Food",
+  "emoji": "🥟",
+  "description": "Chaat, snacks, sweets, drinks and meals from street stalls across India.",
+  "roles": [
+    "Chaat",
+    "Snack",
+    "Sweet",
+    "Drink",
+    "Meal"
+  ],
+  "items": [
+    {
+      "name": "Masala Chai",
+      "price": 10,
+      "rating": 97,
+      "tag": "Drink"
+    },
+    {
+      "name": "Pani Puri",
+      "price": 10,
+      "rating": 96,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Vada Pav",
+      "price": 10,
+      "rating": 95,
+      "tag": "Snack"
+    },
+    {
+      "name": "Pav Bhaji",
+      "price": 9,
+      "rating": 94,
+      "tag": "Meal"
+    },
+    {
+      "name": "Jalebi",
+      "price": 9,
+      "rating": 93,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Masala Dosa",
+      "price": 9,
+      "rating": 93,
+      "tag": "Meal"
+    },
+    {
+      "name": "Chole Bhature",
+      "price": 9,
+      "rating": 92,
+      "tag": "Meal"
+    },
+    {
+      "name": "Samosa",
+      "price": 9,
+      "rating": 92,
+      "tag": "Snack"
+    },
+    {
+      "name": "Gulab Jamun",
+      "price": 9,
+      "rating": 91,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Aloo Tikki Chaat",
+      "price": 9,
+      "rating": 90,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Lassi",
+      "price": 9,
+      "rating": 90,
+      "tag": "Drink"
+    },
+    {
+      "name": "Momos",
+      "price": 8,
+      "rating": 89,
+      "tag": "Snack"
+    },
+    {
+      "name": "Bhel Puri",
+      "price": 8,
+      "rating": 88,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Filter Coffee",
+      "price": 5,
+      "rating": 88,
+      "tag": "Drink"
+    },
+    {
+      "name": "Kulfi",
+      "price": 8,
+      "rating": 87,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Dahi Puri",
+      "price": 8,
+      "rating": 86,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Kathi Roll",
+      "price": 8,
+      "rating": 86,
+      "tag": "Meal"
+    },
+    {
+      "name": "Rasgulla",
+      "price": 8,
+      "rating": 85,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Misal Pav",
+      "price": 4,
+      "rating": 84,
+      "tag": "Meal"
+    },
+    {
+      "name": "Sev Puri",
+      "price": 7,
+      "rating": 84,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Medu Vada",
+      "price": 7,
+      "rating": 83,
+      "tag": "Snack"
+    },
+    {
+      "name": "Papdi Chaat",
+      "price": 7,
+      "rating": 82,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Gajar Halwa",
+      "price": 7,
+      "rating": 81,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Idli Sambar",
+      "price": 7,
+      "rating": 81,
+      "tag": "Meal"
+    },
+    {
+      "name": "Kachori",
+      "price": 7,
+      "rating": 80,
+      "tag": "Snack"
+    },
+    {
+      "name": "Sugarcane Juice",
+      "price": 7,
+      "rating": 80,
+      "tag": "Drink"
+    },
+    {
+      "name": "Malpua",
+      "price": 6,
+      "rating": 79,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Ragda Pattice",
+      "price": 6,
+      "rating": 78,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Thandai",
+      "price": 6,
+      "rating": 78,
+      "tag": "Drink"
+    },
+    {
+      "name": "Dabeli",
+      "price": 6,
+      "rating": 77,
+      "tag": "Meal"
+    },
+    {
+      "name": "Dhokla",
+      "price": 6,
+      "rating": 76,
+      "tag": "Snack"
+    },
+    {
+      "name": "Litti Chokha",
+      "price": 2,
+      "rating": 73,
+      "tag": "Meal"
+    },
+    {
+      "name": "Onion Pakora",
+      "price": 5,
+      "rating": 72,
+      "tag": "Snack"
+    },
+    {
+      "name": "Badam Milk",
+      "price": 5,
+      "rating": 70,
+      "tag": "Drink"
+    },
+    {
+      "name": "Jhalmuri",
+      "price": 3,
+      "rating": 64,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Rabri",
+      "price": 3,
+      "rating": 64,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Shrikhand",
+      "price": 3,
+      "rating": 63,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Kachori Chaat",
+      "price": 3,
+      "rating": 62,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Khandvi",
+      "price": 3,
+      "rating": 62,
+      "tag": "Snack"
+    },
+    {
+      "name": "Aam Panna",
+      "price": 3,
+      "rating": 61,
+      "tag": "Drink"
+    },
+    {
+      "name": "Mirchi Bajji",
+      "price": 3,
+      "rating": 61,
+      "tag": "Snack"
+    },
+    {
+      "name": "Jaljeera",
+      "price": 3,
+      "rating": 60,
+      "tag": "Drink"
+    },
+    {
+      "name": "Poha",
+      "price": 3,
+      "rating": 60,
+      "tag": "Meal"
+    },
+    {
+      "name": "Imarti",
+      "price": 2,
+      "rating": 59,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Masala Corn",
+      "price": 2,
+      "rating": 58,
+      "tag": "Chaat"
+    },
+    {
+      "name": "Nimbu Pani",
+      "price": 2,
+      "rating": 58,
+      "tag": "Drink"
+    },
+    {
+      "name": "Bread Pakora",
+      "price": 2,
+      "rating": 57,
+      "tag": "Snack"
+    },
+    {
+      "name": "Upma",
+      "price": 2,
+      "rating": 56,
+      "tag": "Meal"
+    },
+    {
+      "name": "Chikki",
+      "price": 5,
+      "rating": 55,
+      "tag": "Sweet"
+    },
+    {
+      "name": "Kokum Sherbet",
+      "price": 4,
+      "rating": 54,
+      "tag": "Drink"
+    },
+    {
+      "name": "Akki Roti",
+      "price": 1,
+      "rating": 53,
+      "tag": "Meal"
+    }
+  ]
+}

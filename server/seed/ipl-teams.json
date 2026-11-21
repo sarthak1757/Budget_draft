@@ -1,0 +1,315 @@
+{
+  "slug": "ipl-teams",
+  "name": "IPL Teams",
+  "emoji": "🏆",
+  "description": "IPL team-seasons from 2008 on: every champion and runner-up, plus some seasons that ended early.",
+  "roles": [],
+  "items": [
+    {
+      "name": "Mumbai Indians 2020",
+      "price": 10,
+      "rating": 97,
+      "tag": "Champions"
+    },
+    {
+      "name": "Kolkata Knight Riders 2024",
+      "price": 10,
+      "rating": 96,
+      "tag": "Champions"
+    },
+    {
+      "name": "Chennai Super Kings 2018",
+      "price": 10,
+      "rating": 95,
+      "tag": "Champions"
+    },
+    {
+      "name": "Chennai Super Kings 2011",
+      "price": 9,
+      "rating": 94,
+      "tag": "Champions"
+    },
+    {
+      "name": "Chennai Super Kings 2021",
+      "price": 9,
+      "rating": 94,
+      "tag": "Champions"
+    },
+    {
+      "name": "Mumbai Indians 2013",
+      "price": 9,
+      "rating": 93,
+      "tag": "Champions"
+    },
+    {
+      "name": "Mumbai Indians 2019",
+      "price": 9,
+      "rating": 93,
+      "tag": "Champions"
+    },
+    {
+      "name": "Gujarat Titans 2022",
+      "price": 9,
+      "rating": 92,
+      "tag": "Champions"
+    },
+    {
+      "name": "Mumbai Indians 2017",
+      "price": 9,
+      "rating": 92,
+      "tag": "Champions"
+    },
+    {
+      "name": "Rajasthan Royals 2008",
+      "price": 9,
+      "rating": 92,
+      "tag": "Champions"
+    },
+    {
+      "name": "Royal Challengers Bengaluru 2025",
+      "price": 9,
+      "rating": 92,
+      "tag": "Champions"
+    },
+    {
+      "name": "Chennai Super Kings 2010",
+      "price": 9,
+      "rating": 91,
+      "tag": "Champions"
+    },
+    {
+      "name": "Chennai Super Kings 2023",
+      "price": 9,
+      "rating": 91,
+      "tag": "Champions"
+    },
+    {
+      "name": "Kolkata Knight Riders 2014",
+      "price": 6,
+      "rating": 90,
+      "tag": "Champions"
+    },
+    {
+      "name": "Mumbai Indians 2015",
+      "price": 9,
+      "rating": 90,
+      "tag": "Champions"
+    },
+    {
+      "name": "Kolkata Knight Riders 2012",
+      "price": 8,
+      "rating": 89,
+      "tag": "Champions"
+    },
+    {
+      "name": "Sunrisers Hyderabad 2016",
+      "price": 8,
+      "rating": 88,
+      "tag": "Champions"
+    },
+    {
+      "name": "Gujarat Titans 2023",
+      "price": 5,
+      "rating": 87,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Deccan Chargers 2009",
+      "price": 5,
+      "rating": 86,
+      "tag": "Champions"
+    },
+    {
+      "name": "Royal Challengers Bangalore 2016",
+      "price": 8,
+      "rating": 86,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Chennai Super Kings 2013",
+      "price": 8,
+      "rating": 85,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Sunrisers Hyderabad 2024",
+      "price": 8,
+      "rating": 85,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Punjab Kings 2025",
+      "price": 7,
+      "rating": 84,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Royal Challengers Bangalore 2011",
+      "price": 7,
+      "rating": 84,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Sunrisers Hyderabad 2018",
+      "price": 7,
+      "rating": 84,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Chennai Super Kings 2019",
+      "price": 7,
+      "rating": 83,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Kings XI Punjab 2014",
+      "price": 7,
+      "rating": 83,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Chennai Super Kings 2015",
+      "price": 7,
+      "rating": 82,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Delhi Capitals 2020",
+      "price": 7,
+      "rating": 82,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Mumbai Indians 2010",
+      "price": 7,
+      "rating": 82,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Chennai Super Kings 2012",
+      "price": 7,
+      "rating": 81,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Rajasthan Royals 2022",
+      "price": 7,
+      "rating": 81,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Chennai Super Kings 2008",
+      "price": 7,
+      "rating": 80,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Rising Pune Supergiant 2017",
+      "price": 7,
+      "rating": 80,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Kolkata Knight Riders 2021",
+      "price": 6,
+      "rating": 79,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Royal Challengers Bangalore 2009",
+      "price": 6,
+      "rating": 78,
+      "tag": "Runners-up"
+    },
+    {
+      "name": "Chennai Super Kings 2022",
+      "price": 3,
+      "rating": 63,
+      "tag": "League stage"
+    },
+    {
+      "name": "Chennai Super Kings 2020",
+      "price": 3,
+      "rating": 62,
+      "tag": "League stage"
+    },
+    {
+      "name": "Rising Pune Supergiants 2016",
+      "price": 3,
+      "rating": 60,
+      "tag": "League stage"
+    },
+    {
+      "name": "Kochi Tuskers Kerala 2011",
+      "price": 2,
+      "rating": 58,
+      "tag": "League stage"
+    },
+    {
+      "name": "Gujarat Lions 2017",
+      "price": 2,
+      "rating": 57,
+      "tag": "League stage"
+    },
+    {
+      "name": "Mumbai Indians 2022",
+      "price": 5,
+      "rating": 56,
+      "tag": "League stage"
+    },
+    {
+      "name": "Deccan Chargers 2012",
+      "price": 2,
+      "rating": 55,
+      "tag": "League stage"
+    },
+    {
+      "name": "Pune Warriors India 2013",
+      "price": 1,
+      "rating": 54,
+      "tag": "League stage"
+    },
+    {
+      "name": "Kings XI Punjab 2015",
+      "price": 1,
+      "rating": 53,
+      "tag": "League stage"
+    },
+    {
+      "name": "Pune Warriors India 2012",
+      "price": 1,
+      "rating": 52,
+      "tag": "League stage"
+    },
+    {
+      "name": "Royal Challengers Bangalore 2017",
+      "price": 4,
+      "rating": 51,
+      "tag": "League stage"
+    },
+    {
+      "name": "Deccan Chargers 2008",
+      "price": 1,
+      "rating": 50,
+      "tag": "League stage"
+    },
+    {
+      "name": "Sunrisers Hyderabad 2021",
+      "price": 1,
+      "rating": 49,
+      "tag": "League stage"
+    },
+    {
+      "name": "Kolkata Knight Riders 2009",
+      "price": 1,
+      "rating": 48,
+      "tag": "League stage"
+    },
+    {
+      "name": "Delhi Daredevils 2014",
+      "price": 1,
+      "rating": 47,
+      "tag": "League stage"
+    }
+  ]
+}

@@ -89,7 +89,7 @@ cp .env.example .env
 # 3. (Optional) start MongoDB with Docker
 docker compose up -d
 
-# 4. Load the 10 categories (483 items) into MongoDB
+# 4. Load the 12 categories (585 items) into MongoDB
 npm run seed
 
 # 5. Start the API (port 4000) and the web app (port 5173)
@@ -171,7 +171,7 @@ NODE_ENV=production CLIENT_URL=http://localhost:4000 npm start
    MONGO_URI="mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/budget-draft?retryWrites=true&w=majority" npm run seed
    ```
 
-   It should print `Seeded 10 categories and 483 items.` Seeding replaces **only**
+   It should print `Seeded 12 categories and 585 items.` Seeding replaces **only**
    categories and items. Saved games and daily scores stay. Edits made on `/admin` are
    replaced too, so after going live, edit categories on `/admin` instead of reseeding.
 
