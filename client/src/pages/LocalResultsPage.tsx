@@ -53,6 +53,7 @@ export function LocalResultsPage() {
       <ResultsView
         players={game.players}
         results={results}
+        requiredRoles={game.requiredRoles}
         hideShare={daily !== null}
         actions={
           <>

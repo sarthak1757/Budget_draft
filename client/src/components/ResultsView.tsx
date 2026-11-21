@@ -1,6 +1,6 @@
 import { Avatar } from "./Avatar";
-import { Bot, Gem, Gift, Share2, Trophy, Vote } from "lucide-react";
-import { pricePaid, type GameResults, type PublicItem, type PublicPlayerState } from "@budget-draft/shared";
+import { Award, Bot, Gem, Gift, Share2, Trophy, Vote } from "lucide-react";
+import { ACHIEVEMENTS, achievementsFor, pricePaid, type GameResults, type PublicItem, type PublicPlayerState } from "@budget-draft/shared";
 import { useEffect, type ReactNode } from "react";
 import { buildResultsShareText } from "../lib/shareResults";
 import { copyToClipboard } from "../lib/daily";
@@ -19,6 +19,8 @@ interface ResultsViewProps {
   // Online: this device's player, so only the winner's phone buzzes.
   // Left out on a shared device, where it always buzzes.
   viewerId?: string | null;
+  // The game's Balanced team roles, for the Full Squad badge. Empty when that extra was off.
+  requiredRoles?: string[];
 }
 
 function namesFor(ids: string[], players: PublicPlayerState[]): string {
@@ -51,7 +53,7 @@ export function findBestValue(team: (PublicItem | null)[]): PublicItem | null {
   return best;
 }
 
-export function ResultsView({ players, results, actions, hideShare = false, viewerId }: ResultsViewProps) {
+export function ResultsView({ players, results, actions, hideShare = false, viewerId, requiredRoles = [] }: ResultsViewProps) {
   // A short fanfare when the results first appear, and a buzz for the winner.
   const viewerWon = viewerId === undefined || (viewerId !== null && results.statsWinnerIds.includes(viewerId));
   useEffect(() => {
@@ -141,6 +143,7 @@ export function ResultsView({ players, results, actions, hideShare = false, view
                   <div className="bg-mist" style={{ width: `${ratingShare}%` }} />
                   <div className="bg-gold" style={{ width: `${100 - ratingShare}%` }} />
                 </div>
+                <Badges player={player} requiredRoles={requiredRoles} />
                 <dl className="grid gap-1.5">
                   <ScoreRow label="Rating" value={String(score.ratingTotal)} />
                   <ScoreRow label="Leftover" value={`+${score.leftoverBonus}`} />
@@ -193,3 +196,25 @@ function ScoreRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+
+// The achievements a player earned this game, as small gold pills.
+function Badges({ player, requiredRoles }: { player: PublicPlayerState; requiredRoles: string[] }) {
+  const earned = achievementsFor(player, requiredRoles);
+  if (earned.length === 0) {
+    return null;
+  }
+  return (
+    <ul className="flex flex-wrap gap-2" aria-label="Achievements">
+      {earned.map((id) => {
+        const achievement = ACHIEVEMENTS[id];
+        return (
+          <li key={id} className="flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 ring-1 ring-gold/40">
+            <Award size={13} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-hidden />
+            <span className="label-caps text-[11px] tracking-[0.1em] text-gold">{achievement.name}</span>
+            <span className="text-xs text-mist">· {achievement.description}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}

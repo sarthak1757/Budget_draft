@@ -145,6 +145,7 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
             players={game.players}
             viewerId={playerId}
             results={room.results}
+            requiredRoles={game.requiredRoles}
             actions={
               <>
                 {isHost && (

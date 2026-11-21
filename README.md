@@ -37,6 +37,10 @@ The **Chaos** preset switches every extra on.
 Also everywhere:
 
 - **How to play**: 4 short cards on your first visit; the **?** in the header opens them again.
+- **Achievements** on the results screen (they don't change the score): Bargain Hunter (3+ picks
+  bought at least $2 under the fair price for their rating), Big Spender ($10+ for one pick), Penny
+  Perfect ($0 left), Full Squad (every role covered, when Balanced team is on), Sharp Eye (team average
+  85+) and Steal (a 75+ pick for $1).
 - **My games** (`/games`): the last 20 games finished on this device, with every final team.
   The device keeps only the saved results' ids in localStorage; the results come from the server.
 - **Sound effects** for buy, pass, the last 5 seconds of a timer, and the results. They're

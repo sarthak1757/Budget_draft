@@ -22,3 +22,5 @@ export * from "./game/daily";
 export * from "./game/customCategory";
 export * from "./game/timers";
 export * from "./game/avatars";
+export * from "./game/pricing";
+export * from "./game/achievements";
