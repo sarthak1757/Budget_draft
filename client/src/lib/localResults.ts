@@ -21,7 +21,14 @@ export function buildLocalResultPayload(game: GameState): LocalResultPayload | n
         });
       }
     }
-    players.push({ id: player.id, name: player.name, isBot: player.isBot, budgetLeft: player.budget, team });
+    players.push({
+      id: player.id,
+      name: player.name,
+      isBot: player.isBot,
+      ...(player.avatar === undefined ? {} : { avatar: player.avatar }),
+      budgetLeft: player.budget,
+      team,
+    });
   }
   return {
     mode: game.mode,

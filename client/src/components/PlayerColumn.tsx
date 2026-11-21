@@ -1,3 +1,4 @@
+import { Avatar } from "./Avatar";
 import { Bot, Check, Gift } from "lucide-react";
 import { findMissingRoles, maxSpendable, pricePaid, type PublicItem, type PublicPlayerState } from "@budget-draft/shared";
 import { useAnimatedNumber } from "../lib/useAnimatedNumber";
@@ -33,6 +34,7 @@ export function PlayerColumn({
     >
       <header className="flex min-w-0 items-center gap-2">
         {player.isBot && <Bot size={14} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-label="bot" />}
+        {player.avatar && <Avatar name={player.name} avatar={player.avatar} size="sm" />}
         <Label className={`truncate ${isCurrentTurn ? "text-ivory" : ""}`}>
           {player.name}
           {isViewer && " · you"}

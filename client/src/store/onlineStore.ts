@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type {
   AckResponse,
+  AvatarId,
   GameSettings,
   Reaction,
   ReactionPayload,
@@ -9,7 +10,7 @@ import type {
   TurnMove,
 } from "@budget-draft/shared";
 import type { PeekedItem } from "../lib/peek";
-import { forgetRoom, getStoredPlayerId, storeName, storePlayerId } from "../lib/playerStorage";
+import { forgetRoom, getStoredAvatar, getStoredPlayerId, storeAvatar, storeName, storePlayerId } from "../lib/playerStorage";
 import { socket } from "../lib/socket";
 import { showToast } from "./toastStore";
 
@@ -48,6 +49,7 @@ interface OnlineStore {
   kick: (playerId: string) => Promise<void>;
   makeHost: (playerId: string) => Promise<void>;
   sendChat: (text: string) => Promise<boolean>; // true once the server accepted it
+  setAvatar: (avatar: AvatarId) => Promise<void>;
   startGame: () => Promise<void>;
   rematch: () => Promise<void>;
   act: (move: TurnMove) => Promise<void>;
@@ -71,7 +73,13 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
       return;
     }
     const playerId = getStoredPlayerId(code);
-    const payload = playerId === undefined ? { code, playerName: name } : { code, playerName: name, playerId };
+    const avatar = getStoredAvatar();
+    const payload = {
+      code,
+      playerName: name,
+      ...(playerId === undefined ? {} : { playerId }),
+      ...(avatar === undefined ? {} : { avatar }),
+    };
     const response =
       timeoutMs === undefined
         ? await socket.emitWithAck("room:join", payload)
@@ -251,6 +259,10 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
     setReady: (ready) => run(() => socket.emitWithAck("room:ready", { ready })),
     kick: (playerId) => run(() => socket.emitWithAck("room:kick", { playerId })),
     makeHost: (playerId) => run(() => socket.emitWithAck("room:makeHost", { playerId })),
+    setAvatar: (avatar) => {
+      storeAvatar(avatar);
+      return run(() => socket.emitWithAck("room:avatar", { avatar }));
+    },
     sendChat: async (text) => {
       set({ actionError: null });
       try {

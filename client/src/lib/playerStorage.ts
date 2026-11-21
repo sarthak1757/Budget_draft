@@ -2,6 +2,7 @@
 // - the player id for each room, so a refresh or dropped connection puts you back in your seat
 // - the last name you used, so you don't have to type it every time
 // localStorage can throw (private mode, storage full), so every call is wrapped.
+import { isAvatarId, type AvatarId } from "@budget-draft/shared";
 
 const NAME_KEY = "budget-draft:name";
 
@@ -44,6 +45,26 @@ export function getStoredName(): string {
 export function storeName(name: string): void {
   try {
     localStorage.setItem(NAME_KEY, name);
+  } catch {
+    // ignore
+  }
+}
+
+const AVATAR_KEY = "budget-draft:avatar";
+
+// The avatar this device last picked, sent along when joining a room.
+export function getStoredAvatar(): AvatarId | undefined {
+  try {
+    const stored = localStorage.getItem(AVATAR_KEY);
+    return isAvatarId(stored) ? stored : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function storeAvatar(avatar: AvatarId): void {
+  try {
+    localStorage.setItem(AVATAR_KEY, avatar);
   } catch {
     // ignore
   }

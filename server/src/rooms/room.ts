@@ -1,5 +1,6 @@
 import {
   CUSTOM_CATEGORY_SLUG,
+  firstFreeAvatar,
   DEFAULT_SETTINGS,
   MAX_PLAYERS,
   CHAT_COOLDOWN_MS,
@@ -11,6 +12,7 @@ import {
   REACTION_COOLDOWN_MS,
   setPlayerConnected,
   toPublicState,
+  type AvatarId,
   type ChatMessage,
   type GameResults,
   type GameSettings,
@@ -32,6 +34,7 @@ export interface RoomPlayer {
   name: string;
   isConnected: boolean;
   isReady: boolean; // lobby ready check
+  avatar: AvatarId;
 }
 
 export interface Room {
@@ -162,7 +165,12 @@ function nameTaken(room: Room, name: string): string | null {
 }
 
 // Someone arriving after the game started. Returns an error message, or null.
-export function addSpectator(room: Room, spectator: { id: string; name: string }): string | null {
+// Everyone's avatar, so a newcomer without a choice gets one nobody has.
+function takenAvatars(room: Room): AvatarId[] {
+  return [...room.players, ...room.spectators].map((person) => person.avatar);
+}
+
+export function addSpectator(room: Room, spectator: { id: string; name: string; avatar?: AvatarId | undefined }): string | null {
   if (room.spectators.length >= MAX_SPECTATORS) {
     return "This room is full";
   }
@@ -170,7 +178,12 @@ export function addSpectator(room: Room, spectator: { id: string; name: string }
   if (taken !== null) {
     return `Someone called "${taken}" is already here. Pick another name.`;
   }
-  room.spectators.push({ id: spectator.id, name: spectator.name, isConnected: true });
+  room.spectators.push({
+    id: spectator.id,
+    name: spectator.name,
+    isConnected: true,
+    avatar: spectator.avatar ?? firstFreeAvatar(takenAvatars(room)),
+  });
   return null;
 }
 
@@ -192,7 +205,7 @@ export function seatSpectators(room: Room): void {
   const stillWatching: Spectator[] = [];
   for (const spectator of room.spectators) {
     if (spectator.isConnected && seats > 0) {
-      room.players.push({ id: spectator.id, name: spectator.name, isConnected: true, isReady: false });
+      room.players.push({ id: spectator.id, name: spectator.name, isConnected: true, isReady: false, avatar: spectator.avatar });
       seats -= 1;
     } else if (spectator.isConnected) {
       stillWatching.push(spectator);
@@ -219,7 +232,7 @@ export function roomPhase(room: Room): RoomInfo["phase"] {
 }
 
 // Adds a brand-new player in the lobby. Returns an error message, or null on success.
-export function addPlayer(room: Room, player: { id: string; name: string }, now: number): string | null {
+export function addPlayer(room: Room, player: { id: string; name: string; avatar?: AvatarId | undefined }, now: number): string | null {
   if (room.game !== null) {
     return "This game has already started";
   }
@@ -230,7 +243,13 @@ export function addPlayer(room: Room, player: { id: string; name: string }, now:
   if (taken !== null) {
     return `Someone called "${taken}" is already here. Pick another name.`;
   }
-  room.players.push({ id: player.id, name: player.name, isConnected: true, isReady: false });
+  room.players.push({
+    id: player.id,
+    name: player.name,
+    isConnected: true,
+    isReady: false,
+    avatar: player.avatar ?? firstFreeAvatar(takenAvatars(room)),
+  });
   // Someone new: everyone checks the room again before starting.
   resetReady(room);
   markConnectedChange(room, now);
@@ -314,6 +333,7 @@ export function toRoomSnapshot(room: Room): RoomSnapshot {
       isConnected: player.isConnected,
       isHost: player.id === room.hostId,
       isReady: player.isReady,
+      avatar: player.avatar,
     });
   }
   return {

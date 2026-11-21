@@ -125,6 +125,7 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
         onKick={store.kick}
         onMakeHost={store.makeHost}
         onChat={store.sendChat}
+        onAvatar={store.setAvatar}
         onStart={store.startGame}
         onLeave={onLeave}
       />

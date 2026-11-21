@@ -31,6 +31,7 @@ export function localResultToState(result: LocalResult): GameState {
       id: submitted.id,
       name: submitted.name,
       isBot: submitted.isBot,
+      ...(submitted.avatar === undefined ? {} : { avatar: submitted.avatar }),
       isConnected: true,
       budget: submitted.budgetLeft,
       team,

@@ -56,7 +56,7 @@ export class GameRunner {
     const seated: NewPlayer[] = [];
     for (const player of room.players) {
       if (player.isConnected) {
-        seated.push({ id: player.id, name: player.name, isBot: false });
+        seated.push({ id: player.id, name: player.name, isBot: false, avatar: player.avatar });
       }
     }
     if (seated.length < 2) {

@@ -23,6 +23,7 @@ export async function saveGameResult(state: GameState, results: GameResults, roo
       playerId: player.id,
       name: player.name,
       isBot: player.isBot,
+      ...(player.avatar === undefined ? {} : { avatar: player.avatar }),
       budgetLeft: player.budget,
       team,
       ratingTotal: score?.ratingTotal ?? 0,

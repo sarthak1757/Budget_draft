@@ -21,3 +21,4 @@ export * from "./game/seededRandom";
 export * from "./game/daily";
 export * from "./game/customCategory";
 export * from "./game/timers";
+export * from "./game/avatars";

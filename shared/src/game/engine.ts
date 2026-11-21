@@ -1,3 +1,4 @@
+import type { AvatarId } from "./avatars";
 import type { Item } from "../types/item";
 import type { GameMode, GameSettings, GameState, PlayerState } from "../types/game";
 import { applyAuctionAction } from "./auction";
@@ -21,6 +22,7 @@ export interface NewPlayer {
   id: string;
   name: string;
   isBot: boolean;
+  avatar?: AvatarId;
 }
 
 export interface CreateGameInput {
@@ -77,7 +79,7 @@ export function createGame(input: CreateGameInput): GameState {
     for (let i = 0; i < settings.slotCount; i++) {
       emptyTeam.push(null);
     }
-    playerStates.push({
+    const state: PlayerState = {
       id: player.id,
       name: player.name,
       isBot: player.isBot,
@@ -85,7 +87,11 @@ export function createGame(input: CreateGameInput): GameState {
       budget: settings.startingBudget,
       team: emptyTeam,
       usedPowerUps: [],
-    });
+    };
+    if (player.avatar !== undefined) {
+      state.avatar = player.avatar;
+    }
+    playerStates.push(state);
   }
 
   // If Balanced team can't apply (no roles, or too few slots), switch it off,

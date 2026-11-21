@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { chatSchema, gameSettingsSchema, onlineTimersSchema, roomJoinSchema, roomReadySchema, roomTargetSchema, type RoomSnapshot } from "@budget-draft/shared";
+import { chatSchema, gameSettingsSchema, roomAvatarSchema, onlineTimersSchema, roomJoinSchema, roomReadySchema, roomTargetSchema, type RoomSnapshot } from "@budget-draft/shared";
 import {
   addPlayer,
   applyRoomSettings,
@@ -25,7 +25,7 @@ export function registerRoomHandlers(socket: GameSocket, ctx: SocketContext): vo
       reply({ ok: false, error: parsed.error.issues[0]?.message ?? "Invalid join request" });
       return;
     }
-    const { code, playerName, playerId } = parsed.data;
+    const { code, playerName, playerId, avatar } = parsed.data;
     const room = ctx.rooms.get(code);
     if (!room) {
       reply({ ok: false, error: "No room with that code. It may have expired." });
@@ -55,14 +55,14 @@ export function registerRoomHandlers(socket: GameSocket, ctx: SocketContext): vo
     } else if (room.game !== null) {
       // The game already started: watch it, and play from the next rematch.
       joinedId = randomUUID();
-      const error = addSpectator(room, { id: joinedId, name: playerName });
+      const error = addSpectator(room, { id: joinedId, name: playerName, avatar });
       if (error !== null) {
         reply({ ok: false, error });
         return;
       }
     } else {
       joinedId = randomUUID();
-      const error = addPlayer(room, { id: joinedId, name: playerName }, ctx.now());
+      const error = addPlayer(room, { id: joinedId, name: playerName, avatar }, ctx.now());
       if (error !== null) {
         reply({ ok: false, error });
         return;
@@ -185,6 +185,28 @@ export function registerRoomHandlers(socket: GameSocket, ctx: SocketContext): vo
     check.room.hostId = target.id;
     reply({ ok: true, data: null });
     ctx.runner.broadcastRoom(check.room);
+  });
+
+  socket.on("room:avatar", (payload, ack) => {
+    const reply = safeAck<null>(ack);
+    const parsed = roomAvatarSchema.safeParse(payload);
+    if (!parsed.success) {
+      reply({ ok: false, error: "Pick one of the avatars" });
+      return;
+    }
+    const room = socket.data.roomCode === undefined ? undefined : ctx.rooms.get(socket.data.roomCode);
+    const player = room && socket.data.playerId !== undefined ? findRoomPlayer(room, socket.data.playerId) : undefined;
+    if (!room || !player) {
+      reply({ ok: false, error: "You're not in a room" });
+      return;
+    }
+    if (room.game !== null) {
+      reply({ ok: false, error: "Avatars can only be changed in the lobby" });
+      return;
+    }
+    player.avatar = parsed.data.avatar;
+    reply({ ok: true, data: null });
+    ctx.runner.broadcastRoom(room);
   });
 
   socket.on("chat:send", (payload, ack) => {

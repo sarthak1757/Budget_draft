@@ -1,3 +1,4 @@
+import { Avatar } from "./Avatar";
 import { Bot, Gem, Gift, Share2, Trophy, Vote } from "lucide-react";
 import { pricePaid, type GameResults, type PublicItem, type PublicPlayerState } from "@budget-draft/shared";
 import { useEffect, type ReactNode } from "react";
@@ -128,7 +129,10 @@ export function ResultsView({ players, results, actions, hideShare = false, view
                       {String(rank + 1).padStart(2, "0")}
                       {player.isBot && <Bot size={13} strokeWidth={ICON_STROKE} className="text-gold" aria-label="bot" />}
                     </Label>
-                    <h2 className="display-serif truncate text-3xl text-ivory">{player.name}</h2>
+                    <h2 className="display-serif flex min-w-0 items-center gap-3 text-3xl text-ivory">
+                      {player.avatar && <Avatar name={player.name} avatar={player.avatar} size="md" />}
+                      <span className="truncate">{player.name}</span>
+                    </h2>
                   </div>
                   <span className="display-serif text-6xl text-ivory tabular-nums">{score.total}</span>
                 </header>

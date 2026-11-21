@@ -1,22 +1,28 @@
 import { useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import {
+  AVATAR_IDS,
   DEFAULT_SETTINGS,
+  firstFreeAvatar,
   MAX_PLAYERS,
   MAX_SLOTS,
   MIN_PLAYERS,
   MIN_SLOTS,
+  type AvatarId,
   type GameSettings,
   type NewPlayer,
 } from "@budget-draft/shared";
+import { Avatar } from "../components/Avatar";
+import { AvatarPicker } from "../components/AvatarPicker";
 import { DifficultyPicker } from "../components/DifficultyPicker";
+import { Sheet } from "../components/Sheet";
 import { RulesPanel } from "../components/RulesPanel";
 import { Stepper } from "../components/Stepper";
 import { INPUT_CLASS, Label, PillButton, UrgentNote } from "../components/brand/primitives";
 import { Button, Card, CardTitle, ErrorBox, PageShell, Spinner } from "../components/ui";
 import { fetchCategories, fetchCategoryItems } from "../lib/categories";
 import { parseMode } from "../lib/modes";
-import { getStoredName, storeName } from "../lib/playerStorage";
+import { getStoredAvatar, getStoredName, storeAvatar, storeName } from "../lib/playerStorage";
 import { useAsync } from "../lib/useAsync";
 import { validateSetup } from "../lib/validateSetup";
 import { useLocalGameStore } from "../store/localGameStore";
@@ -37,6 +43,12 @@ export function SetupPage() {
   const categories = useAsync(fetchCategories, []);
   const isBotMode = mode === "bot";
   const [names, setNames] = useState<string[]>(() => (isBotMode ? [getStoredName()] : ["", ""]));
+  // One avatar per human, in the same order as the names.
+  const [avatars, setAvatars] = useState<AvatarId[]>(() => {
+    const first = getStoredAvatar() ?? AVATAR_IDS[0];
+    return isBotMode ? [first] : [first, firstFreeAvatar([first])];
+  });
+  const [pickingFor, setPickingFor] = useState<number | null>(null);
   const [botCount, setBotCount] = useState(1);
   const [budget, setBudget] = useState(DEFAULT_SETTINGS.startingBudget);
   const [slots, setSlots] = useState(DEFAULT_SETTINGS.slotCount);
@@ -75,18 +87,22 @@ export function SetupPage() {
   function addPlayer() {
     if (names.length < MAX_PLAYERS) {
       setNames([...names, ""]);
+      setAvatars([...avatars, firstFreeAvatar(avatars)]);
     }
   }
 
   function removePlayer(index: number) {
     if (names.length > MIN_PLAYERS) {
       const next = [];
+      const nextAvatars: AvatarId[] = [];
       for (let i = 0; i < names.length; i++) {
         if (i !== index) {
           next.push(names[i] ?? "");
+          nextAvatars.push(avatars[i] ?? firstFreeAvatar(nextAvatars));
         }
       }
       setNames(next);
+      setAvatars(nextAvatars);
     }
   }
 
@@ -111,14 +127,18 @@ export function SetupPage() {
     try {
       const items = await fetchCategoryItems(categorySlug);
       const players: NewPlayer[] = [];
-      for (const name of names) {
-        players.push({ id: crypto.randomUUID(), name: name.trim(), isBot: false });
-      }
+      names.forEach((name, index) => {
+        players.push({ id: crypto.randomUUID(), name: name.trim(), isBot: false, avatar: avatars[index] ?? firstFreeAvatar(avatars) });
+      });
       for (const botName of botNames) {
         players.push({ id: crypto.randomUUID(), name: botName, isBot: true });
       }
       if (isBotMode) {
         storeName(names[0]?.trim() ?? "");
+      }
+      const myAvatar = avatars[0];
+      if (myAvatar !== undefined) {
+        storeAvatar(myAvatar);
       }
       startGame({ mode: gameMode, settings, players, items, roles: categoryRoles });
       navigate("/play");
@@ -143,15 +163,18 @@ export function SetupPage() {
             <Card className="grid gap-4">
               <label className="grid gap-2">
                 <Label>Your name</Label>
-                <input
-                  value={names[0] ?? ""}
-                  onChange={(event) => updateName(0, event.target.value)}
-                  maxLength={20}
-                  autoCapitalize="words"
-                  autoCorrect="off"
-                  aria-label="Player 1 name"
-                  className={INPUT_CLASS}
-                />
+                <span className="flex gap-2">
+                  <AvatarButton name={names[0] ?? ""} avatar={avatars[0]} index={0} onOpen={setPickingFor} />
+                  <input
+                    value={names[0] ?? ""}
+                    onChange={(event) => updateName(0, event.target.value)}
+                    maxLength={20}
+                    autoCapitalize="words"
+                    autoCorrect="off"
+                    aria-label="Player 1 name"
+                    className={`${INPUT_CLASS} min-w-0 flex-1`}
+                  />
+                </span>
               </label>
               <Stepper label="Bots" value={botCount} min={1} max={MAX_BOTS} onChange={setBotCount} />
               <DifficultyPicker
@@ -167,6 +190,7 @@ export function SetupPage() {
               <div className="grid gap-4">
                 {names.map((name, index) => (
                   <div key={index} className="flex gap-2">
+                    <AvatarButton name={name} avatar={avatars[index]} index={index} onOpen={setPickingFor} />
                     <input
                       value={name}
                       onChange={(event) => updateName(index, event.target.value)}
@@ -224,6 +248,33 @@ export function SetupPage() {
           </PillButton>
         </div>
       )}
+      <Sheet open={pickingFor !== null} onClose={() => setPickingFor(null)} title={`Avatar for ${pickingFor === null ? "" : names[pickingFor]?.trim() || `player ${pickingFor + 1}`}`}>
+        <AvatarPicker
+          value={pickingFor === null ? undefined : avatars[pickingFor]}
+          onChange={(avatar) => {
+            if (pickingFor !== null) {
+              const next = [...avatars];
+              next[pickingFor] = avatar;
+              setAvatars(next);
+            }
+            setPickingFor(null);
+          }}
+        />
+      </Sheet>
     </PageShell>
+  );
+}
+
+// The avatar next to a name field. Tap to pick another.
+function AvatarButton({ name, avatar, index, onOpen }: { name: string; avatar: AvatarId | undefined; index: number; onOpen: (index: number) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(index)}
+      aria-label={`Change avatar for player ${index + 1}`}
+      className="grid size-12 shrink-0 place-items-center rounded-full transition hover:opacity-80"
+    >
+      <Avatar name={name || "?"} avatar={avatar} size="md" />
+    </button>
   );
 }

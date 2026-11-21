@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import type { DraftStyle, GameMode, RulesPreset } from "@budget-draft/shared";
+import { AVATAR_IDS, type AvatarId, type DraftStyle, type GameMode, type RulesPreset } from "@budget-draft/shared";
 
 // A copy of each item as it was during the game. We store a snapshot instead of
 // a reference so editing or deleting an item later doesn't rewrite history.
@@ -15,6 +15,7 @@ export interface PlayerResult {
   playerId: string;
   name: string;
   isBot: boolean;
+  avatar?: AvatarId;
   budgetLeft: number;
   team: TeamItemSnapshot[];
   ratingTotal: number;
@@ -57,6 +58,7 @@ const playerResultSchema = new Schema<PlayerResult>(
     playerId: { type: String, required: true },
     name: { type: String, required: true },
     isBot: { type: Boolean, required: true },
+    avatar: { type: String, enum: AVATAR_IDS },
     budgetLeft: { type: Number, required: true },
     team: { type: [teamItemSchema], required: true },
     ratingTotal: { type: Number, required: true },

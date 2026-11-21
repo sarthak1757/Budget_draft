@@ -98,7 +98,7 @@ function OpponentChip({ player, badges, onOpen }: { player: PublicPlayerState; b
         {player.isBot ? (
           <Bot size={14} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-hidden />
         ) : (
-          <Avatar name={player.name} size="xs" />
+          <Avatar name={player.name} avatar={player.avatar} size="xs" />
         )}
         <Label className={`truncate tracking-[0.1em] ${isCurrent ? "text-ivory" : ""}`}>{player.name}</Label>
       </span>
@@ -142,6 +142,7 @@ export function MyTeamBar({ player, title, badges }: MyTeamBarProps) {
         onClick={() => setOpen(!open)}
         className="flex min-h-12 w-full items-center gap-3 px-4 text-left"
       >
+        {player.avatar && <Avatar name={player.name} avatar={player.avatar} size="sm" />}
         <Label className="min-w-0 flex-1 truncate text-ivory">{title}</Label>
         <Label className="shrink-0 text-mist/80">
           {filled}/{player.team.length}

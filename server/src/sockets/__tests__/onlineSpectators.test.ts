@@ -39,7 +39,7 @@ describe("spectators", () => {
 
     const watcher = await harness.newClient();
     const joined = await join(watcher, game.code, "Dev");
-    expect(joined.room.spectators).toEqual([{ id: joined.playerId, name: "Dev", isConnected: true }]);
+    expect(joined.room.spectators).toEqual([{ id: joined.playerId, name: "Dev", isConnected: true, avatar: "flame" }]);
     expect(joined.room.game?.players.some((p) => p.id === joined.playerId)).toBe(false);
     if (joined.room.game) expectNothingHidden(joined.room.game);
 

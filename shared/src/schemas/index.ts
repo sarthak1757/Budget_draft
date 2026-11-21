@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AVATAR_IDS } from "../game/avatars";
 import {
   BID_SECONDS_OPTIONS,
   CHAT_MAX_LENGTH,
@@ -77,9 +78,12 @@ export const onlineTimersSchema = z.object({
 
 // ---- Socket payloads (client -> server) ----
 
+export const avatarSchema = z.enum(AVATAR_IDS);
+
 export const roomJoinSchema = z.object({
   code: roomCodeSchema,
   playerName: playerNameSchema,
+  avatar: avatarSchema.optional(),
   playerId: playerIdSchema.optional(), // sent when reconnecting
 });
 
@@ -106,6 +110,8 @@ export const chatSchema = z.object({
     .transform((text) => text.replace(/\s+/g, " ").trim())
     .pipe(z.string().min(1, "Type a message first").max(CHAT_MAX_LENGTH, `Keep it under ${CHAT_MAX_LENGTH} characters`)),
 });
+
+export const roomAvatarSchema = z.object({ avatar: avatarSchema });
 
 // Host controls in the lobby: the player to kick, or to hand host to.
 export const roomTargetSchema = z.object({ playerId: playerIdSchema });
@@ -146,6 +152,7 @@ export const localResultSchema = z
           id: playerIdSchema,
           name: playerNameSchema,
           isBot: z.boolean(),
+          avatar: avatarSchema.optional(),
           budgetLeft: z.number().int().min(0).max(100),
           team: z.array(resultItemSchema).max(MAX_SLOTS),
         }),
@@ -259,6 +266,7 @@ export type ReactionPayload = z.infer<typeof reactionSchema>;
 export type RoomReadyPayload = z.infer<typeof roomReadySchema>;
 export type RoomTargetPayload = z.infer<typeof roomTargetSchema>;
 export type ChatPayload = z.input<typeof chatSchema>;
+export type RoomAvatarPayload = z.infer<typeof roomAvatarSchema>;
 export type PeekPayload = z.infer<typeof peekSchema>;
 export type CreateRoomPayload = z.infer<typeof createRoomSchema>;
 export type VoteCastPayload = z.infer<typeof voteCastSchema>;

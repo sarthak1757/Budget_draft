@@ -1,5 +1,6 @@
 import type { GameResults, GameSettings, PublicGameState } from "./game";
 import type { PublicItem } from "./item";
+import type { AvatarId } from "../game/avatars";
 import type {
   GameSettingsPayload,
   PeekPayload,
@@ -7,6 +8,7 @@ import type {
   RoomReadyPayload,
   RoomTargetPayload,
   ChatPayload,
+  RoomAvatarPayload,
   RoomJoinPayload,
   TurnActionPayload,
   VoteCastPayload,
@@ -18,6 +20,7 @@ export interface LobbyPlayer {
   isConnected: boolean;
   isHost: boolean;
   isReady: boolean; // tapped "Ready" in the lobby
+  avatar: AvatarId;
 }
 
 export interface ChatMessage {
@@ -33,6 +36,7 @@ export interface Spectator {
   id: string;
   name: string;
   isConnected: boolean;
+  avatar: AvatarId;
 }
 
 // Everything a client needs to draw the lobby or the game.
@@ -64,6 +68,8 @@ export interface ClientToServerEvents {
   "room:makeHost": (payload: RoomTargetPayload, ack: Ack<null>) => void;
   // Lobby only, one per second per player.
   "chat:send": (payload: ChatPayload, ack: Ack<null>) => void;
+  // Lobby only: pick a different avatar.
+  "room:avatar": (payload: RoomAvatarPayload, ack: Ack<null>) => void;
   "game:start": (ack: Ack<null>) => void;
   // Host only, after the game ended: same room and players, new shuffle.
   "game:rematch": (ack: Ack<null>) => void;

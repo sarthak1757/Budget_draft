@@ -1,3 +1,4 @@
+import type { AvatarId } from "../game/avatars";
 import type { RulesPreset } from "../game/presets";
 import type { CategorySlug, Item, PublicItem } from "./item";
 
@@ -38,6 +39,7 @@ export interface PlayerState<I extends PublicItem = Item> {
   name: string;
   isBot: boolean;
   isConnected: boolean;
+  avatar?: AvatarId; // missing for bots and for games saved before avatars existed
   budget: number;
   team: (I | null)[]; // always slotCount long; null = empty slot
   usedPowerUps: PowerUp[]; // each power-up can be used once per game

@@ -1,8 +1,9 @@
 import { Check, Crown, Share2, UserX } from "lucide-react";
 import { useState } from "react";
-import { MAX_PLAYERS, MAX_SLOTS, MIN_HUMANS_FOR_VOTE, MIN_SLOTS, type Category, type RoomSnapshot } from "@budget-draft/shared";
+import { MAX_PLAYERS, MAX_SLOTS, MIN_HUMANS_FOR_VOTE, MIN_SLOTS, type AvatarId, type Category, type RoomSnapshot } from "@budget-draft/shared";
 import { isTouchDevice } from "../lib/useMediaQuery";
 import { Avatar } from "./Avatar";
+import { AvatarPicker } from "./AvatarPicker";
 import { RulesPanel } from "./RulesPanel";
 import { Sheet } from "./Sheet";
 import { Stepper } from "./Stepper";
@@ -21,11 +22,13 @@ interface LobbyViewProps {
   onKick: (playerId: string) => void;
   onMakeHost: (playerId: string) => void;
   onChat: (text: string) => Promise<boolean>;
+  onAvatar: (avatar: AvatarId) => void;
   onStart: () => void;
   onLeave: () => void;
 }
 
-export function LobbyView({ room, playerId, categories, busy, onChangeSettings, onReady, onKick, onMakeHost, onChat, onStart, onLeave }: LobbyViewProps) {
+export function LobbyView({ room, playerId, categories, busy, onChangeSettings, onReady, onKick, onMakeHost, onChat, onAvatar, onStart, onLeave }: LobbyViewProps) {
+  const [pickingAvatar, setPickingAvatar] = useState(false);
   // The player whose host controls (Make host / Remove) are open.
   const [managingId, setManagingId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -118,7 +121,25 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
         </ul>
         {room.players.length < 2 && <p className="mt-4 text-sm text-mist">Waiting for at least one more player…</p>}
         {isHost && room.players.length > 1 && <p className="text-sm text-mist">Tap a player to make them host or remove them.</p>}
+        {me && (
+          <Button variant="secondary" className="w-full" onClick={() => setPickingAvatar(true)} disabled={busy}>
+            <span className="mr-3 inline-flex align-middle">
+              <Avatar name={me.name} avatar={me.avatar} size="sm" />
+            </span>
+            Change avatar
+          </Button>
+        )}
       </Card>
+      <Sheet open={pickingAvatar} onClose={() => setPickingAvatar(false)} title="Pick your avatar">
+        <AvatarPicker
+          value={me?.avatar}
+          disabled={busy}
+          onChange={(avatar) => {
+            onAvatar(avatar);
+            setPickingAvatar(false);
+          }}
+        />
+      </Sheet>
       <Sheet open={managing !== undefined} onClose={() => setManagingId(null)} title={managing ? managing.name : "Player"}>
         {managing && (
           <div className="grid gap-3">
@@ -251,7 +272,7 @@ interface LobbyPlayerRowProps {
 function LobbyPlayerRow({ player, isMe, onManage }: LobbyPlayerRowProps) {
   const content = (
     <>
-      <Avatar name={player.name} />
+      <Avatar name={player.name} avatar={player.avatar} />
       <span className="display-serif min-w-0 truncate text-2xl text-ivory">{player.name}</span>
       {isMe && <Label className="shrink-0 text-mist/80">You</Label>}
       {player.isHost && <Label className="shrink-0 text-gold">Host</Label>}
