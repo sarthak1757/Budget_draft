@@ -1,5 +1,7 @@
 # 💸 Budget Draft
 
+[![CI](https://github.com/sarthak1757/20-_Budget/actions/workflows/ci.yml/badge.svg)](https://github.com/sarthak1757/20-_Budget/actions/workflows/ci.yml)
+
 Who can build the better team with **$20**?
 
 Items from a category (footballers, rappers, fast food…) are revealed one at a time.

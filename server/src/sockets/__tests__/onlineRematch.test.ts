@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { PublicGameState } from "@budget-draft/shared";
+import type { RoomSnapshot } from "@budget-draft/shared";
 import { buyUntilDraftEnds, SocketTestHarness, waitForState, type Client } from "../../test/socketTestUtils";
 
 const harness = new SocketTestHarness();
@@ -8,8 +8,18 @@ beforeAll(() => harness.start());
 afterEach(() => harness.disconnectAll());
 afterAll(() => harness.stop());
 
-function waitForRoomUpdate(client: Client) {
-  return new Promise<{ hostId: string | null; game: PublicGameState | null }>((resolve) => client.once("room:update", resolve));
+// The next room update that passes `check`. Others (like the "result saved"
+// update that follows a game's end) are skipped.
+function waitForRoomUpdate(client: Client, check: (room: RoomSnapshot) => boolean) {
+  return new Promise<RoomSnapshot>((resolve) => {
+    const onUpdate = (room: RoomSnapshot) => {
+      if (check(room)) {
+        client.off("room:update", onUpdate);
+        resolve(room);
+      }
+    };
+    client.on("room:update", onUpdate);
+  });
 }
 
 // Plays a 2-player game to the end (2 players means no vote).
@@ -48,7 +58,7 @@ describe("rematch", () => {
     if (!ben) throw new Error("missing Ben");
     expect(await ben.emitWithAck("game:rematch")).toEqual({ ok: false, error: "Only the host can start a rematch" });
 
-    const update = waitForRoomUpdate(ben);
+    const update = waitForRoomUpdate(ben, (room) => room.game?.phase === "drafting");
     expect(await host.emitWithAck("game:rematch")).toEqual({ ok: true, data: null });
     const { game } = await update;
     expect(game?.phase).toBe("drafting");
@@ -72,7 +82,7 @@ describe("rematch", () => {
     const { clients, ids, host } = await finishedGame();
     const ben = clients.get(ids[1] ?? "");
     if (!ben) throw new Error("missing Ben");
-    const update = waitForRoomUpdate(ben);
+    const update = waitForRoomUpdate(ben, (room) => room.hostId === ids[1]);
     host.disconnect();
     expect((await update).hostId).toBe(ids[1]);
     // Only Ben is left, so there aren't enough players for a rematch.
