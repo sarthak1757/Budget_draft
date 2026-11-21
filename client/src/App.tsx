@@ -10,6 +10,8 @@ import { HomePage } from "./pages/HomePage";
 import { LocalGamePage } from "./pages/LocalGamePage";
 import { LocalResultsPage } from "./pages/LocalResultsPage";
 import { JoinPage } from "./pages/JoinPage";
+import { GameDetailPage } from "./pages/GameDetailPage";
+import { MyGamesPage } from "./pages/MyGamesPage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
 import { NewGamePage } from "./pages/NewGamePage";
 import { RoomPage } from "./pages/RoomPage";
@@ -32,6 +34,8 @@ export function App() {
         <Route path="/daily" element={<DailyPage />} />
         <Route path="/style-guide" element={<StyleGuidePage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/games" element={<MyGamesPage />} />
+        <Route path="/games/:id" element={<GameDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -22,7 +22,7 @@ const silentIo = { to: () => ({ emit: () => true }) } as unknown as GameServer;
 async function startRoom(timers: Partial<OnlineTimers>, draftStyle: "classic" | "auction" = "classic"): Promise<{ room: Room; runner: GameRunner }> {
   const runner = new GameRunner(silentIo, {
     loadCategory: async () => ({ items: makeItems(20), roles: [] }),
-    saveResult: async () => undefined,
+    saveResult: async () => "0123456789abcdef01234567",
     now: () => Date.now(),
   });
   const room = createRoom("ABCDEF", "test", Date.now());

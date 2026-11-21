@@ -10,6 +10,7 @@ import type {
   TurnMove,
 } from "@budget-draft/shared";
 import type { PeekedItem } from "../lib/peek";
+import { rememberGame } from "../lib/matchHistory";
 import { forgetRoom, getStoredAvatar, getStoredPlayerId, storeAvatar, storeName, storePlayerId } from "../lib/playerStorage";
 import { socket } from "../lib/socket";
 import { showToast } from "./toastStore";
@@ -183,6 +184,11 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
     }
   });
   socket.on("room:update", (room) => {
+    // The finished game was saved: list it under "My games" (players only).
+    const me = get().playerId;
+    if (room.resultId !== null && room.game !== null && room.game.players.some((player) => player.id === me)) {
+      rememberGame({ resultId: room.resultId, playerId: me });
+    }
     // A new game (start or rematch) begins at round 1 again, so a Peek from
     // the last game could match a round number. Forget it.
     const oldGame = get().room?.game ?? null;

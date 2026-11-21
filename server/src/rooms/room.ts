@@ -53,6 +53,7 @@ export interface Room {
   game: GameState | null; // null while in the lobby
   results: GameResults | null;
   resultSaved: boolean;
+  resultId: string | null; // set once the finished game is stored
   lastReactionAt: Record<string, number>; // playerId -> when they last sent an emoji
   chat: ChatMessage[]; // lobby chat, last CHAT_HISTORY messages, memory only
   lastChatAt: Record<string, number>; // playerId -> when they last sent a chat message
@@ -85,6 +86,7 @@ export function createRoom(
     game: null,
     results: null,
     resultSaved: false,
+    resultId: null,
     lastReactionAt: {},
     chat: [],
     lastChatAt: {},
@@ -347,6 +349,7 @@ export function toRoomSnapshot(room: Room): RoomSnapshot {
     game: room.game === null ? null : toPublicState(room.game),
     results: room.results,
     customItemCount: room.customItems === null ? null : room.customItems.length,
+    resultId: room.resultId,
   };
 }
 

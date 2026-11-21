@@ -55,6 +55,9 @@ export function PageShell({ title, children, backTo }: { title?: string; childre
             <Link to="/leaderboard" className="label-caps inline-flex min-h-11 min-w-11 items-center justify-center text-mist hover:text-ivory">
               Leaderboard
             </Link>
+            <Link to="/games" className="label-caps inline-flex min-h-11 min-w-11 items-center justify-center text-mist hover:text-ivory">
+              My games
+            </Link>
           </nav>
           <div className="ml-auto flex items-center gap-2 sm:ml-0">
             <MuteButton />

@@ -37,6 +37,8 @@ The **Chaos** preset switches every extra on.
 Also everywhere:
 
 - **How to play**: 4 short cards on your first visit; the **?** in the header opens them again.
+- **My games** (`/games`): the last 20 games finished on this device, with every final team.
+  The device keeps only the saved results' ids in localStorage; the results come from the server.
 - **Sound effects** for buy, pass, the last 5 seconds of a timer, and the results. They're
   generated with the Web Audio API (no audio files). The speaker button mutes them, and
   that choice is remembered in localStorage.

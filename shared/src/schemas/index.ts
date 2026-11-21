@@ -120,6 +120,14 @@ export const peekSchema = z.object({ roundNumber: roundNumberSchema });
 
 // ---- REST payloads ----
 
+// A MongoDB id (24 hex characters), e.g. a saved game for "My games".
+export const resultIdSchema = z.string().regex(/^[a-f0-9]{24}$/, "Not a game id");
+// "My games" asks for up to 20 at once: ?ids=a,b,c
+export const resultIdsQuerySchema = z
+  .string()
+  .transform((ids) => ids.split(",").filter((id) => id !== ""))
+  .pipe(z.array(resultIdSchema).min(1).max(20));
+
 
 export const voteCastSchema = z.object({
   targetPlayerId: playerIdSchema,

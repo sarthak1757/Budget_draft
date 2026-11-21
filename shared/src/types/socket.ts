@@ -51,6 +51,7 @@ export interface RoomSnapshot {
   game: PublicGameState | null;
   results: GameResults | null;
   customItemCount: number | null; // set when the host pasted their own list
+  resultId: string | null; // the saved result, once the finished game is stored
 }
 
 // Every client request gets a reply through a Socket.io acknowledgement callback.

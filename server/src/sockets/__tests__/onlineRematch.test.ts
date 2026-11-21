@@ -21,6 +21,24 @@ async function finishedGame() {
   return { ...game, finalState };
 }
 
+describe("saved result", () => {
+  it("tells everyone the saved game's id, for My games", async () => {
+    const game = await harness.startGame(["Asha", "Ben"], 3);
+    const saved = new Promise<string>((resolve) => {
+      game.host.on("room:update", (room) => {
+        if (room.resultId !== null) resolve(room.resultId);
+      });
+    });
+    await buyUntilDraftEnds(game.clients, game.host, game.state);
+    const id = await saved;
+    const res = await fetch(`${harness.url}/api/results/${id}`);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { mode: string; players: { playerId: string }[] };
+    expect(body.mode).toBe("online");
+    expect(body.players.map((p) => p.playerId)).toEqual(game.ids);
+  });
+});
+
 describe("rematch", () => {
   it("starts a new game in the same room with the same players", async () => {
     const { clients, ids, host, finalState } = await finishedGame();

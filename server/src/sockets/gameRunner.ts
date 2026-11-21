@@ -21,7 +21,7 @@ import type { GameServer } from "./types";
 
 export interface GameRunnerDeps {
   loadCategory: (categorySlug: string) => Promise<{ items: Item[]; roles: string[] } | null>;
-  saveResult: (state: GameState, results: GameResults, roomCode: string) => Promise<void>;
+  saveResult: (state: GameState, results: GameResults, roomCode: string) => Promise<string>; // the saved id
   now: () => number;
 }
 
@@ -101,6 +101,7 @@ export class GameRunner {
     }
     const oldResults = room.results;
     const oldResultSaved = room.resultSaved;
+    const oldResultId = room.resultId;
     const oldPlayers = room.players;
     const oldSpectators = room.spectators;
     // People who watched this game get a seat in the next one.
@@ -109,6 +110,7 @@ export class GameRunner {
     room.game = null;
     room.results = null;
     room.resultSaved = false;
+    room.resultId = null;
     const result = await this.startGame(room);
     if (!result.ok) {
       room.game = oldGame;
@@ -116,6 +118,7 @@ export class GameRunner {
       room.spectators = oldSpectators;
       room.results = oldResults;
       room.resultSaved = oldResultSaved;
+      room.resultId = oldResultId;
     }
     return result;
   }
@@ -218,10 +221,19 @@ export class GameRunner {
     // Save once, even if something calls finish twice.
     if (!room.resultSaved) {
       room.resultSaved = true;
-      this.deps.saveResult(game, results, room.code).catch((error: unknown) => {
-        // The players already saw their results; a failed save only affects the leaderboard.
-        console.error(`Could not save result for room ${room.code}:`, error);
-      });
+      this.deps
+        .saveResult(game, results, room.code)
+        .then((resultId) => {
+          // Only if these results are still on screen (no rematch since).
+          if (room.results === results) {
+            room.resultId = resultId;
+            this.broadcastRoom(room);
+          }
+        })
+        .catch((error: unknown) => {
+          // The players already saw their results; a failed save only affects the leaderboard.
+          console.error(`Could not save result for room ${room.code}:`, error);
+        });
     }
   }
 

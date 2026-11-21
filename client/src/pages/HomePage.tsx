@@ -79,6 +79,7 @@ export function HomePage() {
       <div className="mt-10 flex flex-wrap gap-3">
         <PillLink to="/join">Join with a code</PillLink>
         <PillLink to="/leaderboard">Leaderboard</PillLink>
+        <PillLink to="/games">My games</PillLink>
       </div>
     </PageShell>
   );

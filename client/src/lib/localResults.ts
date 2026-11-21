@@ -1,5 +1,6 @@
-import { pricePaid, type GameState, type LocalResultPayload } from "@budget-draft/shared";
+import { pricePaid, type GameState, type LocalResultPayload, type SaveResultResponse } from "@budget-draft/shared";
 import { apiRequest } from "./api";
+import { rememberGame } from "./matchHistory";
 
 // Shapes a finished local/bot game the way POST /api/results expects.
 export function buildLocalResultPayload(game: GameState): LocalResultPayload | null {
@@ -51,7 +52,10 @@ export async function submitLocalResult(game: GameState): Promise<void> {
     return;
   }
   try {
-    await apiRequest("/api/results", { method: "POST", body: payload, timeoutMs: 5000 });
+    const saved = await apiRequest<SaveResultResponse>("/api/results", { method: "POST", body: payload, timeoutMs: 5000 });
+    // Solo vs bots: the one human is this device. Pass-and-play: everyone was.
+    const humans = game.players.filter((player) => !player.isBot);
+    rememberGame({ resultId: saved.id, playerId: humans.length === 1 ? (humans[0]?.id ?? null) : null });
   } catch (error) {
     console.info("Result not saved:", error instanceof Error ? error.message : error);
   }
