@@ -75,7 +75,8 @@ export function ResultsView({ players, results, actions, hideShare = false, view
     <div className="grid gap-12">
       {/* The winner, huge, with a chrome shape behind the letters. */}
       <section className="relative isolate grid gap-4 overflow-hidden pb-2">
-        <ChromeBlob shape="ribbon" className="absolute -top-6 -right-10 -z-10 w-56 sm:right-[8%] sm:w-80" />
+        {/* Smaller on phones so it stays behind the name, clear of the buttons. */}
+        <ChromeBlob shape="ribbon" className="absolute -top-4 -right-8 -z-10 w-36 sm:-top-6 sm:right-[8%] sm:w-80" />
         <Label className="flex items-center gap-2 text-ivory">
           <Trophy size={14} strokeWidth={ICON_STROKE} aria-hidden />
           Stats winner{statsTie && " · tie"}

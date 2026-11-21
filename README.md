@@ -1,6 +1,6 @@
 # 💸 Budget Draft
 
-[![CI](https://github.com/sarthak1757/20-_Budget/actions/workflows/ci.yml/badge.svg)](https://github.com/sarthak1757/20-_Budget/actions/workflows/ci.yml)
+[![CI](https://github.com/sarthak1757/Budget_draft/actions/workflows/ci.yml/badge.svg)](https://github.com/sarthak1757/Budget_draft/actions/workflows/ci.yml)
 
 Who can build the better team with **$20**?
 
