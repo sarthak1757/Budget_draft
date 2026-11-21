@@ -46,13 +46,19 @@ describe("GET /api/health", () => {
 
 describe("serving the built client", () => {
   it("sends index.html for the home page and for React Router paths", async () => {
-    for (const path of ["/", "/room/ABC123", "/daily", "/new/online/cricket"]) {
+    for (const path of ["/", "/daily", "/new/online/cricket"]) {
       const res = await request(app).get(path);
       expect(res.status).toBe(200);
       expect(res.headers["content-type"]).toMatch(/text\/html/);
       expect(res.headers["cache-control"]).toBe("no-cache");
       expect(res.text).toContain("<title>Budget Draft</title>");
     }
+  });
+
+  it("titles invite links for link previews", async () => {
+    const res = await request(app).get("/join/ABC123");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("<title>Join my Budget Draft room</title>");
   });
 
   it("serves built files, and lets browsers cache hashed assets for a long time", async () => {

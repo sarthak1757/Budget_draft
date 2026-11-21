@@ -41,6 +41,9 @@ Also everywhere:
   bought at least $2 under the fair price for their rating), Big Spender ($10+ for one pick), Penny
   Perfect ($0 left), Full Squad (every role covered, when Balanced team is on), Sharp Eye (team average
   85+) and Steal (a 75+ pick for $1).
+- **Link previews**: Open Graph and Twitter tags with a 1200×630 image (`client/public/og.png`).
+  The server fills in absolute URLs, and room links (`/join/CODE`, `/room/CODE`) preview as
+  "Join my Budget Draft room" (`server/src/linkPreview.ts`).
 - **My games** (`/games`): the last 20 games finished on this device, with every final team.
   The device keeps only the saved results' ids in localStorage; the results come from the server.
 - **Sound effects** for buy, pass, the last 5 seconds of a timer, and the results. They're

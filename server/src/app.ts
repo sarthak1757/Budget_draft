@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { extname, join } from "node:path";
 import cors from "cors";
 import express, { type Express } from "express";
@@ -10,6 +11,7 @@ import { categoriesRouter } from "./routes/categories";
 import { dailyRouter } from "./routes/daily";
 import { leaderboardRouter } from "./routes/leaderboard";
 import { resultsRouter } from "./routes/results";
+import { renderIndexHtml } from "./linkPreview";
 import { roomsRouter } from "./routes/rooms";
 
 export interface AppOptions {
@@ -62,7 +64,7 @@ export function createApp(options: AppOptions): Express {
   app.use("/api", notFoundHandler);
 
   if (options.clientDistDir !== undefined) {
-    serveClient(app, options.clientDistDir);
+    serveClient(app, options.clientDistDir, options.clientUrl);
   }
 
   app.use(notFoundHandler);
@@ -72,20 +74,23 @@ export function createApp(options: AppOptions): Express {
 
 // Serves the built React app. Files that exist (JS, CSS, fonts, icons) are sent
 // as they are; any other page path gets index.html so React Router can show it.
-function serveClient(app: Express, clientDistDir: string): void {
+function serveClient(app: Express, clientDistDir: string, publicOrigin: string): void {
   // Vite puts a content hash in every file name under /assets, so browsers
   // may cache those forever. index.html itself is never cached.
   app.use("/assets", express.static(join(clientDistDir, "assets"), { immutable: true, maxAge: "1y" }));
   app.use(express.static(clientDistDir, { index: false }));
 
-  const indexHtml = join(clientDistDir, "index.html");
+  // Read once, on the first page request (the build doesn't change while running).
+  let template: string | null = null;
   app.get("/{*path}", (req, res, next) => {
     // A missing file like /logo.png should be a 404, not the React page.
     if (extname(req.path) !== "") {
       next();
       return;
     }
+    template ??= readFileSync(join(clientDistDir, "index.html"), "utf8");
     res.setHeader("Cache-Control", "no-cache");
-    res.sendFile(indexHtml);
+    // Link previews: absolute image URLs, and "Join my Budget Draft room" for invites.
+    res.type("html").send(renderIndexHtml(template, publicOrigin, req.path));
   });
 }
