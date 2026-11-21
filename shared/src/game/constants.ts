@@ -59,3 +59,8 @@ export const CUSTOM_MAX_ITEMS = 150;
 // at most one per player per second.
 export const REACTION_EMOJIS = ["👏", "😂", "😱", "🔥", "💸"] as const;
 export const REACTION_COOLDOWN_MS = 1000;
+
+// Lobby chat: short messages, one per second per player, kept in memory only.
+export const CHAT_MAX_LENGTH = 120;
+export const CHAT_COOLDOWN_MS = 1000;
+export const CHAT_HISTORY = 30; // the room keeps the last 30 messages

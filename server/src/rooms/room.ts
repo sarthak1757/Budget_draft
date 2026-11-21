@@ -2,6 +2,8 @@ import {
   CUSTOM_CATEGORY_SLUG,
   DEFAULT_SETTINGS,
   MAX_PLAYERS,
+  CHAT_COOLDOWN_MS,
+  CHAT_HISTORY,
   MAX_SPECTATORS,
   ONLINE_BID_SECONDS,
   ONLINE_TURN_SECONDS,
@@ -9,6 +11,7 @@ import {
   REACTION_COOLDOWN_MS,
   setPlayerConnected,
   toPublicState,
+  type ChatMessage,
   type GameResults,
   type GameSettings,
   type GameState,
@@ -48,6 +51,8 @@ export interface Room {
   results: GameResults | null;
   resultSaved: boolean;
   lastReactionAt: Record<string, number>; // playerId -> when they last sent an emoji
+  chat: ChatMessage[]; // lobby chat, last CHAT_HISTORY messages, memory only
+  lastChatAt: Record<string, number>; // playerId -> when they last sent a chat message
   createdAt: number;
   emptySince: number | null; // when the last connected player left; used for cleanup
 }
@@ -78,6 +83,8 @@ export function createRoom(
     results: null,
     resultSaved: false,
     lastReactionAt: {},
+    chat: [],
+    lastChatAt: {},
     createdAt: now,
     emptySince: now, // nobody is connected yet
   };
@@ -314,6 +321,7 @@ export function toRoomSnapshot(room: Room): RoomSnapshot {
     hostId: room.hostId,
     players,
     spectators: room.spectators.map((spectator) => ({ ...spectator })),
+    chat: room.chat,
     settings: room.settings,
     // Always strip the pool. The RoomSnapshot type wouldn't accept the full state anyway.
     game: room.game === null ? null : toPublicState(room.game),
@@ -345,5 +353,25 @@ export function recordReaction(room: Room, playerId: string, now: number): strin
     return "Slow down! One reaction per second.";
   }
   room.lastReactionAt[playerId] = now;
+  return null;
+}
+
+let nextChatId = 1;
+
+// Lobby chat. Returns an error message, or null once the message is added.
+export function addChatMessage(room: Room, playerId: string, text: string, now: number): string | null {
+  const player = findRoomPlayer(room, playerId);
+  if (!player) {
+    return "You're not in this room";
+  }
+  if (room.game !== null) {
+    return "Chat is only open in the lobby";
+  }
+  const last = room.lastChatAt[playerId];
+  if (last !== undefined && now - last < CHAT_COOLDOWN_MS) {
+    return "Slow down! One message per second.";
+  }
+  room.lastChatAt[playerId] = now;
+  room.chat = [...room.chat, { id: nextChatId++, playerId, playerName: player.name, text }].slice(-CHAT_HISTORY);
   return null;
 }

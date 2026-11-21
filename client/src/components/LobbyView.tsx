@@ -7,6 +7,7 @@ import { RulesPanel } from "./RulesPanel";
 import { Sheet } from "./Sheet";
 import { Stepper } from "./Stepper";
 import { TimerSettings } from "./TimerSettings";
+import { LobbyChat } from "./LobbyChat";
 import { ICON_STROKE, INPUT_CLASS, Label, PillButton } from "./brand/primitives";
 import { Button, Card, CardTitle } from "./ui";
 
@@ -19,11 +20,12 @@ interface LobbyViewProps {
   onReady: (ready: boolean) => void;
   onKick: (playerId: string) => void;
   onMakeHost: (playerId: string) => void;
+  onChat: (text: string) => Promise<boolean>;
   onStart: () => void;
   onLeave: () => void;
 }
 
-export function LobbyView({ room, playerId, categories, busy, onChangeSettings, onReady, onKick, onMakeHost, onStart, onLeave }: LobbyViewProps) {
+export function LobbyView({ room, playerId, categories, busy, onChangeSettings, onReady, onKick, onMakeHost, onChat, onStart, onLeave }: LobbyViewProps) {
   // The player whose host controls (Make host / Remove) are open.
   const [managingId, setManagingId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -146,6 +148,8 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
           </div>
         )}
       </Sheet>
+
+      <LobbyChat messages={room.chat} playerId={playerId} onSend={onChat} />
 
       <Card className="grid gap-5">
         <CardTitle>Settings{!isHost && " · host decides"}</CardTitle>

@@ -6,6 +6,7 @@ import type {
   ReactionPayload,
   RoomReadyPayload,
   RoomTargetPayload,
+  ChatPayload,
   RoomJoinPayload,
   TurnActionPayload,
   VoteCastPayload,
@@ -17,6 +18,13 @@ export interface LobbyPlayer {
   isConnected: boolean;
   isHost: boolean;
   isReady: boolean; // tapped "Ready" in the lobby
+}
+
+export interface ChatMessage {
+  id: number;
+  playerId: string;
+  playerName: string;
+  text: string;
 }
 
 // Someone who joined after the game started. They watch the same public
@@ -34,6 +42,7 @@ export interface RoomSnapshot {
   hostId: string | null; // null mid-game if the host left (the game keeps running)
   players: LobbyPlayer[];
   spectators: Spectator[];
+  chat: ChatMessage[]; // lobby only, oldest first, never saved
   settings: GameSettings;
   game: PublicGameState | null;
   results: GameResults | null;
@@ -53,6 +62,8 @@ export interface ClientToServerEvents {
   // Host only, lobby only.
   "room:kick": (payload: RoomTargetPayload, ack: Ack<null>) => void;
   "room:makeHost": (payload: RoomTargetPayload, ack: Ack<null>) => void;
+  // Lobby only, one per second per player.
+  "chat:send": (payload: ChatPayload, ack: Ack<null>) => void;
   "game:start": (ack: Ack<null>) => void;
   // Host only, after the game ended: same room and players, new shuffle.
   "game:rematch": (ack: Ack<null>) => void;

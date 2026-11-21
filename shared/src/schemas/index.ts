@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   BID_SECONDS_OPTIONS,
+  CHAT_MAX_LENGTH,
   CUSTOM_CATEGORY_SLUG,
   CUSTOM_MAX_ITEMS,
   CUSTOM_MIN_ITEMS,
@@ -97,6 +98,14 @@ export const turnActionSchema = z.discriminatedUnion("action", [
 export const reactionSchema = z.object({ emoji: z.enum(REACTION_EMOJIS) });
 
 export const roomReadySchema = z.object({ ready: z.boolean() });
+
+// Lobby chat. Line breaks and runs of spaces become one space.
+export const chatSchema = z.object({
+  text: z
+    .string()
+    .transform((text) => text.replace(/\s+/g, " ").trim())
+    .pipe(z.string().min(1, "Type a message first").max(CHAT_MAX_LENGTH, `Keep it under ${CHAT_MAX_LENGTH} characters`)),
+});
 
 // Host controls in the lobby: the player to kick, or to hand host to.
 export const roomTargetSchema = z.object({ playerId: playerIdSchema });
@@ -249,6 +258,7 @@ export type TurnActionPayload = z.infer<typeof turnActionSchema>;
 export type ReactionPayload = z.infer<typeof reactionSchema>;
 export type RoomReadyPayload = z.infer<typeof roomReadySchema>;
 export type RoomTargetPayload = z.infer<typeof roomTargetSchema>;
+export type ChatPayload = z.input<typeof chatSchema>;
 export type PeekPayload = z.infer<typeof peekSchema>;
 export type CreateRoomPayload = z.infer<typeof createRoomSchema>;
 export type VoteCastPayload = z.infer<typeof voteCastSchema>;

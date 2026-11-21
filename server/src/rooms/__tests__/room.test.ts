@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createGame } from "@budget-draft/shared";
-import { addPlayer, createRoom, markPlayerConnected, recordReaction, removePlayer, toRoomInfo, toRoomSnapshot } from "../room";
+import { addChatMessage, addPlayer, createRoom, markPlayerConnected, recordReaction, removePlayer, toRoomInfo, toRoomSnapshot } from "../room";
 import { RoomStore } from "../roomStore";
 
 function lobbyWith(names: string[]) {
@@ -119,5 +119,27 @@ describe("recordReaction", () => {
     expect(recordReaction(room, "player-b1", 1500)).toBeNull(); // each player has their own limit
     expect(recordReaction(room, "player-a1", 2000)).toBeNull();
     expect(recordReaction(room, "stranger", 5000)).toBe("You're not in this room");
+  });
+});
+
+describe("lobby chat", () => {
+  it("keeps only the last 30 messages", () => {
+    const room = lobbyWith(["Asha"]);
+    for (let i = 0; i < 40; i++) {
+      expect(addChatMessage(room, "asha", `msg ${i}`, i * 1000)).toBeNull();
+    }
+    expect(room.chat).toHaveLength(30);
+    expect(room.chat[0]?.text).toBe("msg 10");
+    expect(room.chat.at(-1)?.text).toBe("msg 39");
+    expect(toRoomSnapshot(room).chat).toHaveLength(30);
+  });
+
+  it("limits each player to one message per second", () => {
+    const room = lobbyWith(["Asha", "Ben"]);
+    expect(addChatMessage(room, "asha", "hi", 0)).toBeNull();
+    expect(addChatMessage(room, "asha", "again", 999)).toBe("Slow down! One message per second.");
+    expect(addChatMessage(room, "ben", "hey", 500)).toBeNull();
+    expect(addChatMessage(room, "asha", "now", 1000)).toBeNull();
+    expect(addChatMessage(room, "stranger", "hi", 5000)).toBe("You're not in this room");
   });
 });

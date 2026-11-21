@@ -47,6 +47,7 @@ interface OnlineStore {
   setReady: (ready: boolean) => Promise<void>;
   kick: (playerId: string) => Promise<void>;
   makeHost: (playerId: string) => Promise<void>;
+  sendChat: (text: string) => Promise<boolean>; // true once the server accepted it
   startGame: () => Promise<void>;
   rematch: () => Promise<void>;
   act: (move: TurnMove) => Promise<void>;
@@ -250,6 +251,19 @@ export const useOnlineStore = create<OnlineStore>()((set, get) => {
     setReady: (ready) => run(() => socket.emitWithAck("room:ready", { ready })),
     kick: (playerId) => run(() => socket.emitWithAck("room:kick", { playerId })),
     makeHost: (playerId) => run(() => socket.emitWithAck("room:makeHost", { playerId })),
+    sendChat: async (text) => {
+      set({ actionError: null });
+      try {
+        const response = await socket.emitWithAck("chat:send", { text });
+        if (!response.ok) {
+          set({ actionError: response.error });
+        }
+        return response.ok;
+      } catch {
+        set({ actionError: "The server didn't answer. Check your connection." });
+        return false;
+      }
+    },
     startGame: () => run(() => socket.emitWithAck("game:start")),
     rematch: () => run(() => socket.emitWithAck("game:rematch")),
     act: (move) => {

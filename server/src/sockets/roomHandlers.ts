@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { gameSettingsSchema, onlineTimersSchema, roomJoinSchema, roomReadySchema, roomTargetSchema, type RoomSnapshot } from "@budget-draft/shared";
+import { chatSchema, gameSettingsSchema, onlineTimersSchema, roomJoinSchema, roomReadySchema, roomTargetSchema, type RoomSnapshot } from "@budget-draft/shared";
 import {
   addPlayer,
   applyRoomSettings,
+  addChatMessage,
   addSpectator,
   findRoomPlayer,
   findSpectator,
@@ -184,6 +185,28 @@ export function registerRoomHandlers(socket: GameSocket, ctx: SocketContext): vo
     check.room.hostId = target.id;
     reply({ ok: true, data: null });
     ctx.runner.broadcastRoom(check.room);
+  });
+
+  socket.on("chat:send", (payload, ack) => {
+    const reply = safeAck<null>(ack);
+    const parsed = chatSchema.safeParse(payload);
+    if (!parsed.success) {
+      reply({ ok: false, error: parsed.error.issues[0]?.message ?? "Invalid message" });
+      return;
+    }
+    const { roomCode, playerId } = socket.data;
+    const room = roomCode === undefined ? undefined : ctx.rooms.get(roomCode);
+    if (!room || playerId === undefined) {
+      reply({ ok: false, error: "You're not in a room" });
+      return;
+    }
+    const error = addChatMessage(room, playerId, parsed.data.text, ctx.now());
+    if (error !== null) {
+      reply({ ok: false, error });
+      return;
+    }
+    reply({ ok: true, data: null });
+    ctx.runner.broadcastRoom(room);
   });
 
   socket.on("disconnect", () => {

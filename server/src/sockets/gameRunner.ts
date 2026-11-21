@@ -77,6 +77,8 @@ export class GameRunner {
     }
 
     room.players = room.players.filter((player) => player.isConnected);
+    // Chat is for the lobby; nobody needs it during the game.
+    room.chat = [];
     room.game = createGame({
       mode: "online",
       settings: settingsForGame(room),
