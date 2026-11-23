@@ -1,13 +1,17 @@
 import { Avatar } from "./Avatar";
 import { Award, Bot, Gem, Gift, Share2, Trophy, Vote } from "lucide-react";
 import { ACHIEVEMENTS, achievementsFor, pricePaid, type GameResults, type PublicItem, type PublicPlayerState } from "@budget-draft/shared";
+import { motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
 import { buildResultsShareText } from "../lib/shareResults";
 import { copyToClipboard } from "../lib/daily";
+import { DISTANCE, enterTransition, RESULTS_DELAY, SPRING, STAGGER } from "../lib/motion";
 import { buzz, playSound } from "../store/soundStore";
 import { showToast } from "../store/toastStore";
 import { ChromeBlob } from "./brand/ChromeBlob";
 import { ICON_STROKE, Label, PillButton } from "./brand/primitives";
+import { ConfettiBurst } from "./ConfettiBurst";
+import { CountUp } from "./MotionBits";
 
 interface ResultsViewProps {
   players: PublicPlayerState[];
@@ -81,9 +85,15 @@ export function ResultsView({ players, results, actions, hideShare = false, view
           <Trophy size={14} strokeWidth={ICON_STROKE} aria-hidden />
           Stats winner{statsTie && " · tie"}
         </Label>
-        <p className="display-serif text-6xl break-words text-ivory [text-shadow:0_4px_28px_var(--color-ink-raised)] sm:text-9xl">
+        <motion.p
+          className="display-serif origin-bottom-left text-6xl break-words text-ivory [text-shadow:0_4px_28px_var(--color-ink-raised)] sm:text-9xl"
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={SPRING.pop}
+        >
           {namesFor(results.statsWinnerIds, players)}
-        </p>
+        </motion.p>
+        <ConfettiBurst />
         {results.votingHeld && (
           <div className="grid gap-1">
             <Label className="flex items-center gap-2">
@@ -121,10 +131,14 @@ export function ResultsView({ players, results, actions, hideShare = false, view
             const bestValue = findBestValue(player.team);
             // How much of the total came from ratings vs leftover money, for the line.
             const ratingShare = score.total > 0 ? (score.ratingTotal / score.total) * 100 : 0;
+            const cardDelay = RESULTS_DELAY.cards + rank * RESULTS_DELAY.perCard;
             return (
-              <section
+              <motion.section
                 key={score.playerId}
                 className={`grid grid-cols-[minmax(0,1fr)] content-start gap-4 rounded-[1.75rem] bg-ink-raised p-5 ${isWinner ? "shadow-glow" : "ring-1 ring-mist/15"}`}
+                initial={{ opacity: 0, y: DISTANCE.page }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...enterTransition, delay: cardDelay }}
               >
                 <header className="flex items-start justify-between gap-3">
                   <div className="grid min-w-0 gap-1">
@@ -137,14 +151,14 @@ export function ResultsView({ players, results, actions, hideShare = false, view
                       <span className="truncate">{player.name}</span>
                     </h2>
                   </div>
-                  <span className="display-serif text-6xl text-ivory tabular-nums">{score.total}</span>
+                  <CountUp value={score.total} className="display-serif text-6xl text-ivory tabular-nums" />
                 </header>
 
                 <div className="flex h-[2px] bg-mist/20" aria-hidden>
                   <div className="bg-mist" style={{ width: `${ratingShare}%` }} />
                   <div className="bg-gold" style={{ width: `${100 - ratingShare}%` }} />
                 </div>
-                <Badges player={player} requiredRoles={requiredRoles} />
+                <Badges player={player} requiredRoles={requiredRoles} delay={RESULTS_DELAY.badges + rank * RESULTS_DELAY.perCard} />
                 <dl className="grid gap-1.5">
                   <ScoreRow label="Rating" value={String(score.ratingTotal)} />
                   <ScoreRow label="Leftover" value={`+${score.leftoverBonus}`} />
@@ -157,7 +171,13 @@ export function ResultsView({ players, results, actions, hideShare = false, view
                 <ol className="grid grid-cols-[minmax(0,1fr)]">
                   {player.team.map((item, index) =>
                     item ? (
-                      <li key={index} className="flex items-center gap-2 border-t border-mist/15 py-2 last:border-b">
+                      <motion.li
+                        key={index}
+                        className="flex items-center gap-2 border-t border-mist/15 py-2 last:border-b"
+                        initial={{ opacity: 0, x: -DISTANCE.row }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ ...enterTransition, delay: cardDelay + RESULTS_DELAY.slots + index * STAGGER.slot }}
+                      >
                         <span className="min-w-0 flex-1">
                           <span className={`display-serif block truncate text-xl ${item.isBench ? "text-mist/70" : "text-ivory"}`}>
                             {item.name}
@@ -172,12 +192,12 @@ export function ResultsView({ players, results, actions, hideShare = false, view
                           <Gem size={15} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-label="Best value" />
                         )}
                         <span className="display-serif w-9 text-right text-2xl text-ivory tabular-nums">{item.rating ?? "?"}</span>
-                      </li>
+                      </motion.li>
                     ) : null,
                   )}
                 </ol>
                 <Label className="text-mist/80">${player.budget} left</Label>
-              </section>
+              </motion.section>
             );
           })}
         </div>
@@ -199,21 +219,27 @@ function ScoreRow({ label, value }: { label: string; value: string }) {
 
 
 // The achievements a player earned this game, as small gold pills.
-function Badges({ player, requiredRoles }: { player: PublicPlayerState; requiredRoles: string[] }) {
+function Badges({ player, requiredRoles, delay }: { player: PublicPlayerState; requiredRoles: string[]; delay: number }) {
   const earned = achievementsFor(player, requiredRoles);
   if (earned.length === 0) {
     return null;
   }
   return (
     <ul className="flex flex-wrap gap-2" aria-label="Achievements">
-      {earned.map((id) => {
+      {earned.map((id, index) => {
         const achievement = ACHIEVEMENTS[id];
         return (
-          <li key={id} className="flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 ring-1 ring-gold/40">
+          <motion.li
+            key={id}
+            className="flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 ring-1 ring-gold/40"
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ ...SPRING.pop, delay: delay + index * STAGGER.badge }}
+          >
             <Award size={13} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-hidden />
             <span className="label-caps text-[11px] tracking-[0.1em] text-gold">{achievement.name}</span>
             <span className="text-xs text-mist">· {achievement.description}</span>
-          </li>
+          </motion.li>
         );
       })}
     </ul>

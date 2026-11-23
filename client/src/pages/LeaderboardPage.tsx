@@ -1,8 +1,10 @@
+import { motion } from "motion/react";
 import type { LeaderboardEntry } from "@budget-draft/shared";
 import { Avatar } from "../components/Avatar";
 import { ArrowLink, Label } from "../components/brand/primitives";
 import { ErrorBox, PageShell, Spinner } from "../components/ui";
 import { apiRequest } from "../lib/api";
+import { DISTANCE, enterTransition, STAGGER } from "../lib/motion";
 import { useAsync } from "../lib/useAsync";
 
 function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
@@ -40,7 +42,13 @@ export function LeaderboardPage() {
             </thead>
             <tbody>
               {leaderboard.data.map((entry, index) => (
-                <tr key={entry.name} className="border-b border-mist/15">
+                <motion.tr
+                  key={entry.name}
+                  className="border-b border-mist/15"
+                  initial={{ opacity: 0, y: DISTANCE.row }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...enterTransition, delay: index * STAGGER.row }}
+                >
                   <td className="py-4 pr-3">
                     <Label className={index === 0 ? "text-ivory" : "text-mist/80"}>{String(index + 1).padStart(2, "0")}</Label>
                   </td>
@@ -53,7 +61,7 @@ export function LeaderboardPage() {
                   <td className="display-serif px-3 py-4 text-right text-3xl text-ivory tabular-nums">{entry.wins}</td>
                   <td className="px-3 py-4 text-right text-mist tabular-nums">{entry.gamesPlayed}</td>
                   <td className="py-4 pl-3 text-right text-mist tabular-nums">{entry.bestScore ?? "—"}</td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

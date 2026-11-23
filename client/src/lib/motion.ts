@@ -35,6 +35,15 @@ export const DURATION = {
 // Milliseconds, for timers that aren't motion transitions.
 export const CONFETTI_MS = 1500;
 
+// Seconds: when each part of the results screen starts, so they arrive in order:
+// the winner, then the team cards, then their slots, then the badges.
+export const RESULTS_DELAY = {
+  cards: 0.25, // first team card
+  perCard: 0.08, // each later card
+  slots: 0.45, // first slot of a card (after the card itself)
+  badges: 0.9, // first achievement badge
+} as const;
+
 // Seconds between items in a staggered list.
 export const STAGGER = {
   row: 0.05, // leaderboard rows

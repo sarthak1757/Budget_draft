@@ -3,9 +3,10 @@ import { GAME_MOMENT } from "./motion";
 
 // Smoothly counts from the previous value to the new one (e.g. $20 -> $11),
 // so players can see money leave a budget instead of it just changing.
-export function useAnimatedNumber(target: number, durationMs = GAME_MOMENT.coin * 1000): number {
-  const [shown, setShown] = useState(target);
-  const fromRef = useRef(target);
+// `startFrom` counts up from that value on first render (results scores start at 0).
+export function useAnimatedNumber(target: number, durationMs = GAME_MOMENT.coin * 1000, startFrom: number = target): number {
+  const [shown, setShown] = useState(startFrom);
+  const fromRef = useRef(startFrom);
 
   useEffect(() => {
     const from = fromRef.current;

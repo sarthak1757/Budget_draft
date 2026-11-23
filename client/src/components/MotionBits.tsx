@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useAnimate, useReducedMotion } from "motion/re
 import { useEffect, useRef, type ReactNode } from "react";
 import { odometerDigits } from "../lib/boardMoments";
 import { DURATION, EASE, GAME_MOMENT, gameTransition, SPRING } from "../lib/motion";
+import { useAnimatedNumber } from "../lib/useAnimatedNumber";
 
 // Small reusable animations for the game board.
 
@@ -75,6 +76,18 @@ export function LeaderGlow({ active, children }: { active: boolean; children: Re
         )}
       </AnimatePresence>
       <span className="relative inline-grid">{children}</span>
+    </span>
+  );
+}
+
+// A number that counts up from 0 when it first appears (results scores).
+// Screen readers get the final number straight away.
+export function CountUp({ value, className = "" }: { value: number; className?: string }) {
+  const shown = useAnimatedNumber(value, DURATION.countUp * 1000, 0);
+  return (
+    <span className={className}>
+      <span className="sr-only">{value}</span>
+      <span aria-hidden>{shown}</span>
     </span>
   );
 }
