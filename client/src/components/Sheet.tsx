@@ -1,5 +1,8 @@
 import { X } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useRef, type MouseEvent, type ReactNode } from "react";
+import { DURATION, EASE, SPRING } from "../lib/motion";
+import { useIsPhone } from "../lib/useMediaQuery";
 import { ICON_STROKE, Label } from "./brand/primitives";
 
 interface SheetProps {
@@ -15,6 +18,7 @@ interface SheetProps {
 // Esc to close, and makes the page behind it inert.
 export function Sheet({ open, onClose, title, children, className = "" }: SheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const isPhone = useIsPhone();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -44,11 +48,16 @@ export function Sheet({ open, onClose, title, children, className = "" }: SheetP
       aria-label={title}
       onClose={onClose}
       onClick={handleClick}
-      className="sheet fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none bg-transparent p-0 text-mist backdrop:bg-ink/80 md:open:grid md:place-items-center"
+      className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none bg-transparent p-0 text-mist backdrop:bg-ink/80 md:open:grid md:place-items-center"
     >
       {open && (
-        <div
-          className={`sheet-panel absolute inset-x-0 bottom-0 grid max-h-[88dvh] grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto rounded-t-[2rem] bg-ink-raised px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl ring-1 ring-mist/15 md:static md:w-full md:max-w-md md:rounded-[2rem] md:p-7 ${className}`}
+        // Phones: slides up from the bottom edge on a spring.
+        // Wider screens: a centred dialog that scales in from 96%.
+        <motion.div
+          initial={isPhone ? { y: "100%", opacity: 0 } : { scale: 0.96, opacity: 0 }}
+          animate={isPhone ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
+          transition={isPhone ? { y: SPRING.sheet, opacity: { duration: DURATION.exit } } : { duration: DURATION.modal, ease: EASE.out }}
+          className={`absolute inset-x-0 bottom-0 grid max-h-[88dvh] grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto rounded-t-[2rem] bg-ink-raised px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl ring-1 ring-mist/15 md:static md:w-full md:max-w-md md:rounded-[2rem] md:p-7 ${className}`}
         >
           {/* The grab handle: tells phone users this slid up from the bottom. */}
           <span aria-hidden className="mx-auto h-1 w-10 rounded-full bg-mist/30 md:hidden" />
@@ -64,7 +73,7 @@ export function Sheet({ open, onClose, title, children, className = "" }: SheetP
             </button>
           </div>
           {children}
-        </div>
+        </motion.div>
       )}
     </dialog>
   );

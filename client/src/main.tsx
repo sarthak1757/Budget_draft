@@ -1,4 +1,5 @@
 import { StrictMode } from "react";
+import { MotionConfig } from "motion/react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { App } from "./App";
@@ -18,9 +19,12 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      {/* "user": with reduce motion on, movement is skipped and fades stay. */}
+      <MotionConfig reducedMotion="user">
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </MotionConfig>
     </ErrorBoundary>
   </StrictMode>,
 );

@@ -1,6 +1,8 @@
 import { Check, Crown, Share2, UserX } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { MAX_PLAYERS, MAX_SLOTS, MIN_HUMANS_FOR_VOTE, MIN_SLOTS, type AvatarId, type Category, type RoomSnapshot } from "@budget-draft/shared";
+import { DISTANCE, enterTransition, exitTransition, SPRING } from "../lib/motion";
 import { isTouchDevice } from "../lib/useMediaQuery";
 import { Avatar } from "./Avatar";
 import { AvatarPicker } from "./AvatarPicker";
@@ -107,17 +109,27 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
         <CardTitle>
           Players ({room.players.length}/{MAX_PLAYERS})
         </CardTitle>
+        {/* New players slide in; someone who leaves or is removed fades out
+            and the rows below slide up into the gap. */}
         <ul className="grid gap-4">
-          {room.players.map((player) => (
-            <li key={player.id}>
-              <LobbyPlayerRow
-                player={player}
-                isMe={player.id === playerId}
-                // The host can manage everyone else.
-                onManage={isHost && player.id !== playerId ? () => setManagingId(player.id) : null}
-              />
-            </li>
-          ))}
+          <AnimatePresence initial={false} mode="popLayout">
+            {room.players.map((player) => (
+              <motion.li
+                key={player.id}
+                layout="position"
+                initial={{ opacity: 0, x: -DISTANCE.row }}
+                animate={{ opacity: 1, x: 0, transition: enterTransition }}
+                exit={{ opacity: 0, transition: exitTransition }}
+              >
+                <LobbyPlayerRow
+                  player={player}
+                  isMe={player.id === playerId}
+                  // The host can manage everyone else.
+                  onManage={isHost && player.id !== playerId ? () => setManagingId(player.id) : null}
+                />
+              </motion.li>
+            ))}
+          </AnimatePresence>
         </ul>
         {room.players.length < 2 && <p className="mt-4 text-sm text-mist">Waiting for at least one more player…</p>}
         {isHost && room.players.length > 1 && <p className="text-sm text-mist">Tap a player to make them host or remove them.</p>}
@@ -279,7 +291,16 @@ function LobbyPlayerRow({ player, isMe, onManage }: LobbyPlayerRowProps) {
       <span className="ml-auto flex shrink-0 items-center gap-3">
         {player.isReady ? (
           <Label className="flex items-center gap-1 text-gold">
-            <Check size={14} strokeWidth={ICON_STROKE} aria-hidden />
+            {/* The tick pops in when a player turns ready. */}
+            <motion.span
+              key="tick"
+              className="inline-flex"
+              initial={{ scale: 0.3, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={SPRING.pop}
+            >
+              <Check size={14} strokeWidth={ICON_STROKE} aria-hidden />
+            </motion.span>
             Ready
           </Label>
         ) : (
