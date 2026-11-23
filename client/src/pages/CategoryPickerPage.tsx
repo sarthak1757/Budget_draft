@@ -1,8 +1,9 @@
 import { Link, Navigate, useParams } from "react-router";
 import { CUSTOM_CATEGORY_SLUG } from "@budget-draft/shared";
 import { Label } from "../components/brand/primitives";
-import { ErrorBox, PageShell, Spinner } from "../components/ui";
+import { ErrorBox, PageShell } from "../components/ui";
 import { fetchCategories } from "../lib/categories";
+import { DURATION } from "../lib/motion";
 import { parseMode } from "../lib/modes";
 import { useAsync } from "../lib/useAsync";
 
@@ -30,7 +31,7 @@ export function CategoryPickerPage() {
 
   return (
     <PageShell title="Pick a category" backTo="/">
-      {categories.status === "loading" && <Spinner label="Loading categories…" />}
+      {categories.status === "loading" && <CategorySkeletons />}
       {categories.status === "error" && <ErrorBox message={categories.message} onRetry={categories.retry} />}
       {categories.status === "ready" && categories.data.length === 0 && (
         <p className="text-mist">
@@ -81,5 +82,39 @@ export function CategoryPickerPage() {
         </div>
       )}
     </PageShell>
+  );
+}
+
+const SKELETON_COUNT = 6;
+
+// Grey cards the shape of the real ones, with a shine sweeping across,
+// while the categories load. (With reduce motion the shine stays still.)
+function CategorySkeletons() {
+  const cards = [];
+  for (let index = 0; index < SKELETON_COUNT; index++) {
+    cards.push(
+      <div key={index} className="relative grid min-h-56 content-between gap-8 overflow-hidden rounded-[1.75rem] border border-mist/15 bg-ink-raised p-6">
+        <span className="flex items-start justify-between">
+          <span className="h-3 w-6 rounded-full bg-mist/15" />
+          <span className="size-8 rounded-full bg-mist/15" />
+        </span>
+        <span className="grid gap-3">
+          <span className="h-8 w-2/3 rounded-full bg-mist/15" />
+          <span className="h-3 w-full rounded-full bg-mist/10" />
+          <span className="h-3 w-4/5 rounded-full bg-mist/10" />
+        </span>
+        <span className="h-3 w-20 rounded-full bg-mist/15" />
+        <span
+          aria-hidden
+          className="animate-shimmer absolute inset-0 bg-linear-to-r from-transparent via-mist/10 to-transparent"
+          style={{ animationDuration: `${DURATION.shimmer}s` }}
+        />
+      </div>,
+    );
+  }
+  return (
+    <div role="status" aria-label="Loading categories" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {cards}
+    </div>
   );
 }

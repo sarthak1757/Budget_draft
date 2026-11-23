@@ -3,6 +3,10 @@ import type { Transition } from "motion/react";
 // Every duration, easing, spring and stagger the app's animations use, in one
 // place. Components import these instead of writing their own numbers.
 //
+// CSS-only effects follow the same numbers: button presses use Tailwind's
+// default 150ms transition (= GAME_MOMENT.press), and CSS keyframes that need
+// a duration get it from here through an inline animation-duration.
+//
 // Rules:
 // - Animate only transform and opacity, so cheap phones stay smooth.
 // - Game moments take 150–400ms and never block input or the turn timer.
@@ -30,6 +34,8 @@ export const DURATION = {
   countUp: 0.9, // results scores counting up from 0
   banner: 1.3, // how long "Your turn" stays on screen
   glowPulse: 1.2, // one breath of the high bidder's glow
+  letterRise: 0.5, // one letter of the home title rising into place
+  shimmer: 1.4, // one sweep of the loading skeleton's shine
 } as const;
 
 // Milliseconds, for timers that aren't motion transitions.

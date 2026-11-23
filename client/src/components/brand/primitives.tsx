@@ -44,7 +44,7 @@ interface PillButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function PillButton({ variant = "primary", className = "", ...rest }: PillButtonProps) {
-  const classes = `inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 py-3 font-body font-medium transition active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100 ${PILL_CLASSES[variant]} ${className}`;
+  const classes = `inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 py-3 font-body font-medium transition active:scale-[0.96] enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:active:scale-100 ${PILL_CLASSES[variant]} ${className}`;
   return <button type="button" className={classes} {...rest} />;
 }
 
@@ -63,7 +63,7 @@ export function PillLink({
   return (
     <Link
       to={to}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 py-3 font-body font-medium transition active:scale-[0.98] ${PILL_CLASSES[variant]} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 py-3 font-body font-medium transition hover:-translate-y-0.5 active:scale-[0.96] ${PILL_CLASSES[variant]} ${className}`}
     >
       {children}
     </Link>

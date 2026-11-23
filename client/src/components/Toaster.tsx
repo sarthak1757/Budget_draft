@@ -1,3 +1,5 @@
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { DISTANCE, enterTransition, exitTransition } from "../lib/motion";
 import { useToastStore, type ToastTone } from "../store/toastStore";
 import { UrgentNote } from "./brand/primitives";
 
@@ -13,22 +15,29 @@ const TONE_CLASSES: Record<ToastTone, string> = {
 export function Toaster() {
   const toasts = useToastStore((store) => store.toasts);
   const dismissToast = useToastStore((store) => store.dismissToast);
+  const slide = useReducedMotion() === true ? 0 : -DISTANCE.banner; // reduce motion: fade only
 
   return (
     <div
       aria-live="polite"
       className="pointer-events-none fixed inset-x-0 top-3 z-50 flex flex-col items-center gap-2 px-4 pt-[env(safe-area-inset-top)]"
     >
-      {toasts.map((toast) => (
-        <button
-          key={toast.id}
-          type="button"
-          onClick={() => dismissToast(toast.id)}
-          className={`animate-toast-in pointer-events-auto max-w-sm rounded-full bg-ink-raised px-5 py-3 text-left text-sm font-medium shadow-xl ring-1 ring-mist/15 ${TONE_CLASSES[toast.tone]}`}
+      <AnimatePresence initial={false}>
+        {toasts.map((toast) => (
+          <motion.button
+            key={toast.id}
+            type="button"
+            layout="position"
+            initial={{ y: slide, opacity: 0 }}
+            animate={{ y: 0, opacity: 1, transition: enterTransition }}
+            exit={{ y: slide, opacity: 0, transition: exitTransition }}
+            onClick={() => dismissToast(toast.id)}
+            className={`pointer-events-auto max-w-sm rounded-full bg-ink-raised px-5 py-3 text-left text-sm font-medium shadow-xl ring-1 ring-mist/15 ${TONE_CLASSES[toast.tone]}`}
         >
-          {toast.tone === "warning" ? <UrgentNote>{toast.message}</UrgentNote> : toast.message}
-        </button>
-      ))}
+            {toast.tone === "warning" ? <UrgentNote>{toast.message}</UrgentNote> : toast.message}
+          </motion.button>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
