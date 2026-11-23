@@ -3,6 +3,7 @@ import { useState } from "react";
 import { maxSpendable, type PublicPlayerState } from "@budget-draft/shared";
 import { useAnimatedNumber } from "../lib/useAnimatedNumber";
 import { Avatar } from "./Avatar";
+import { LeaderGlow } from "./MotionBits";
 import { ICON_STROKE, Label, UrgentNote } from "./brand/primitives";
 import { countFilled, PlayerColumn, TeamSlots } from "./PlayerColumn";
 import { Sheet } from "./Sheet";
@@ -11,6 +12,7 @@ import { Sheet } from "./Sheet";
 export interface PlayerBadges {
   currentId: string | null;
   boughtBy: string | null;
+  boughtItemId: string | null; // the item that just landed in a slot (it bounces in)
   highBidderId: string | null;
   cantAffordIds: string[];
   requiredRoles: string[];
@@ -59,6 +61,7 @@ export function OpponentStrip({ players, badges }: OpponentStripProps) {
             cantAfford={badges.cantAffordIds.includes(openPlayer.id)}
             isHighBidder={openPlayer.id === badges.highBidderId}
             requiredRoles={badges.requiredRoles}
+            freshItemId={badges.boughtItemId}
           />
         )}
       </Sheet>
@@ -95,15 +98,19 @@ function OpponentChip({ player, badges, onOpen }: { player: PublicPlayerState; b
       className={`relative grid min-h-14 w-full gap-0.5 rounded-2xl bg-ink-raised px-2.5 py-1.5 text-left transition active:scale-[0.98] ${frame} ${badges.boughtBy === player.id ? "animate-bought" : ""} ${player.isConnected ? "" : "opacity-60"}`}
     >
       <span className="flex min-w-0 items-center gap-1.5">
-        {player.isBot ? (
-          <Bot size={14} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-hidden />
-        ) : (
-          <Avatar name={player.name} avatar={player.avatar} size="xs" />
-        )}
+        <LeaderGlow active={isHighBidder}>
+          {player.isBot ? (
+            <Bot size={14} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-hidden />
+          ) : (
+            <Avatar name={player.name} avatar={player.avatar} size="xs" />
+          )}
+        </LeaderGlow>
         <Label className={`truncate tracking-[0.1em] ${isCurrent ? "text-ivory" : ""}`}>{player.name}</Label>
       </span>
       <span className="flex items-baseline justify-between gap-1">
-        <span className="display-serif text-2xl text-ivory tabular-nums">${shownBudget}</span>
+        <span className="display-serif text-2xl text-ivory tabular-nums" data-budget-for={player.id}>
+          ${shownBudget}
+        </span>
         <Label className="tracking-[0.1em] text-mist/80">
           {filled}/{player.team.length}
         </Label>
@@ -142,12 +149,16 @@ export function MyTeamBar({ player, title, badges }: MyTeamBarProps) {
         onClick={() => setOpen(!open)}
         className="flex min-h-12 w-full items-center gap-3 px-4 text-left"
       >
-        {player.avatar && <Avatar name={player.name} avatar={player.avatar} size="sm" />}
+        {player.avatar && (
+          <LeaderGlow active={player.id === badges.highBidderId}>
+            <Avatar name={player.name} avatar={player.avatar} size="sm" />
+          </LeaderGlow>
+        )}
         <Label className="min-w-0 flex-1 truncate text-ivory">{title}</Label>
         <Label className="shrink-0 text-mist/80">
           {filled}/{player.team.length}
         </Label>
-        <span className="display-serif shrink-0 text-2xl text-ivory tabular-nums">
+        <span className="display-serif shrink-0 text-2xl text-ivory tabular-nums" data-budget-for={player.id}>
           ${shownBudget}
         </span>
         <ChevronUp
@@ -163,7 +174,7 @@ export function MyTeamBar({ player, title, badges }: MyTeamBarProps) {
           {cantAfford && <UrgentNote>Can't afford this one</UrgentNote>}
           {!cantAfford && spendable > 0 && <Label className="text-mist/80">Can spend up to ${spendable}</Label>}
           {!cantAfford && spendable === 0 && <Label className="text-mist/80">Team complete</Label>}
-          <TeamSlots team={player.team} requiredRoles={badges.requiredRoles} />
+          <TeamSlots team={player.team} requiredRoles={badges.requiredRoles} playerId={player.id} freshItemId={badges.boughtItemId} />
         </div>
       )}
     </div>

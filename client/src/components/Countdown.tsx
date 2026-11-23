@@ -1,3 +1,4 @@
+import { motion, MotionConfig } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { playSound } from "../store/soundStore";
 import { Label, UrgentNote } from "./brand/primitives";
@@ -51,17 +52,17 @@ export function Countdown({ deadline, totalSeconds, label, variant = "full" }: C
   if (!running) {
     return null;
   }
-  const percent = Math.min(100, (msLeft / (totalSeconds * 1000)) * 100);
   // No red in the palette: urgency is a pulsing gold number and an icon.
   const urgent = secondsLeft <= 5;
 
   const barColour = urgent ? "bg-gold" : "bg-mist";
+  const totalMs = totalSeconds * 1000;
 
   // Pinned to the top edge (below the notch), so the time left is always in
   // view even when the number has scrolled away.
   const topBar = (
     <div aria-hidden className="pointer-events-none fixed inset-x-0 top-[env(safe-area-inset-top)] z-40 h-1 bg-mist/15">
-      <div className={`h-full transition-[width] duration-200 ease-linear ${barColour}`} style={{ width: `${percent}%` }} />
+      <TimerBar end={localEnd} totalMs={totalMs} className={barColour} />
     </div>
   );
 
@@ -92,8 +93,26 @@ export function Countdown({ deadline, totalSeconds, label, variant = "full" }: C
         </span>
       </div>
       <div className="h-[2px] bg-mist/20">
-        <div className={`h-full transition-[width] duration-200 ease-linear ${barColour}`} style={{ width: `${percent}%` }} />
+        <TimerBar end={localEnd} totalMs={totalMs} className={barColour} />
       </div>
     </div>
+  );
+}
+
+// The time left as a bar that shrinks smoothly to nothing at the deadline:
+// one linear transform animation per turn, not a re-render per tick.
+// It carries information, so it keeps moving with reduce motion on.
+function TimerBar({ end, totalMs, className }: { end: number; totalMs: number; className: string }) {
+  const remaining = Math.max(0, end - Date.now());
+  return (
+    <MotionConfig reducedMotion="never">
+      <motion.div
+        key={end}
+        className={`h-full origin-left ${className}`}
+        initial={{ scaleX: Math.min(1, remaining / totalMs) }}
+        animate={{ scaleX: 0 }}
+        transition={{ duration: remaining / 1000, ease: "linear" }}
+      />
+    </MotionConfig>
   );
 }

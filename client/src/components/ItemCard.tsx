@@ -1,20 +1,24 @@
+import { motion } from "motion/react";
 import type { PublicItem } from "@budget-draft/shared";
+import { GAME_MOMENT, gameTransition, SPRING } from "../lib/motion";
 import { ChromeBlob } from "./brand/ChromeBlob";
 import { Hairline, Label, PriceBadge, RatingBar } from "./brand/primitives";
+import { Bump } from "./MotionBits";
 
 interface ItemCardProps {
   item: PublicItem;
   roundNumber: number;
   itemsRemaining: number;
   isAuction?: boolean; // the listed price is only a guide: bids decide what's paid
+  bumpKey?: number | null; // auction: the high bid. Each change bumps the price badge.
+  discountedTo?: number | null; // Discount was used: strike the old price, show this one
 }
 
-export function ItemCard({ item, roundNumber, itemsRemaining, isAuction = false }: ItemCardProps) {
+// The reveal, the exits and the deck are drawn by CardStage around this card.
+export function ItemCard({ item, roundNumber, itemsRemaining, isAuction = false, bumpKey = null, discountedTo = null }: ItemCardProps) {
   return (
-    // The parent renders this with key={item.id}, so each new item mounts a fresh card
-    // and the reveal animation plays again.
     <article
-      className="animate-card-flip relative grid content-start gap-3 overflow-hidden rounded-[2rem] border border-mist/15 bg-ink-raised p-4 md:gap-5 md:p-5"
+      className="relative grid content-start gap-3 overflow-hidden rounded-[2rem] border border-mist/15 bg-ink-raised p-4 md:gap-5 md:p-5"
       aria-live="polite"
     >
       {/* The tag can be long ("Salesforce · Founder"), so it wraps rather than being cut off. */}
@@ -45,9 +49,37 @@ export function ItemCard({ item, roundNumber, itemsRemaining, isAuction = false 
 
       <Hairline />
       <div className="flex items-end gap-5">
-        <PriceBadge price={item.price} label={isAuction ? "Guide price" : "Price"} size="fluid" />
+        <span className="relative" data-price-badge>
+          <Bump trigger={bumpKey}>
+            <PriceBadge price={item.price} label={isAuction ? "Guide price" : "Price"} size="fluid" />
+          </Bump>
+          {discountedTo !== null && <DiscountStrike price={discountedTo} />}
+        </span>
         <RatingBar rating={item.rating} className="flex-1 pb-7" />
       </div>
     </article>
+  );
+}
+
+// Discount: a line strikes through the old price and the new one pops in beside it.
+function DiscountStrike({ price }: { price: number }) {
+  return (
+    <>
+      <motion.span
+        aria-hidden
+        className="absolute top-8 -left-1 h-[3px] w-[calc(100%+0.5rem)] origin-left -rotate-12 rounded-full bg-ink md:top-10"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: 1 }}
+        transition={gameTransition(GAME_MOMENT.bump)}
+      />
+      <motion.span
+        className="display-serif absolute -top-2 -right-4 grid size-10 place-items-center rounded-full bg-ivory text-xl text-ink shadow-glow"
+        initial={{ scale: 0.4, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={SPRING.pop}
+      >
+        ${price}
+      </motion.span>
+    </>
   );
 }

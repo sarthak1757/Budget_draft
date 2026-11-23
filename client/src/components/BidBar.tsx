@@ -1,5 +1,6 @@
 import { getBidBlockReason, minimumBid, type AuctionState, type PublicPlayerState } from "@budget-draft/shared";
 import { Label, PillButton, UrgentNote } from "./brand/primitives";
+import { RollingNumber } from "./MotionBits";
 
 // Quick-bid steps: one tap raises the high bid by this much.
 export const QUICK_BID_STEPS = [1, 2, 5];
@@ -45,7 +46,9 @@ export function BidBar({ auction, highBidderName, bidder, canAct, busy = false, 
         ) : (
           <>
             <Label>High bid · {highBidderName}</Label>
-            <span className={`display-serif text-ivory ${compact ? "text-2xl" : "text-4xl"}`}>${auction.highBid}</span>
+            <span className={`display-serif inline-flex text-ivory ${compact ? "text-2xl" : "text-4xl"}`}>
+              $<RollingNumber value={auction.highBid} />
+            </span>
           </>
         )}
       </p>

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Route, Routes, useLocation } from "react-router";
 import { HowToPlay } from "./components/HowToPlay";
 import { DISTANCE, enterTransition, exitTransition } from "./lib/motion";
@@ -20,6 +20,7 @@ import { StyleGuidePage } from "./pages/StyleGuidePage";
 
 export function App() {
   const location = useLocation();
+  const leaveBy = useReducedMotion() === true ? 0 : -DISTANCE.page / 2; // reduce motion: fade only
   return (
     <>
       <Toaster />
@@ -31,7 +32,7 @@ export function App() {
           key={location.pathname}
           initial={{ opacity: 0, y: DISTANCE.page }}
           animate={{ opacity: 1, y: 0, transition: enterTransition }}
-          exit={{ opacity: 0, y: -DISTANCE.page / 2, transition: exitTransition }}
+          exit={{ opacity: 0, y: leaveBy, transition: exitTransition }}
         >
           <Routes location={location}>
             <Route path="/" element={<HomePage />} />

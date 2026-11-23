@@ -16,6 +16,7 @@ export const GAME_MOMENT = {
   bump: 0.2, // price badge and odometer on a new high bid
   fade: 0.25, // a card fading away, the timer pulse settling
   slot: 0.3, // a bought item settling into its slot
+  shake: 0.3, // a mystery item wobbling before it settles
   flip: 0.35, // a new item sliding off the deck and turning over
   coin: 0.4, // the price flying from a budget to the slot
   split: 0.4, // Veto: the card's two halves falling apart
@@ -28,7 +29,7 @@ export const DURATION = {
   modal: 0.22, // a dialog scaling in on wide screens
   countUp: 0.9, // results scores counting up from 0
   banner: 1.3, // how long "Your turn" stays on screen
-  mysteryShake: 0.3,
+  glowPulse: 1.2, // one breath of the high bidder's glow
 } as const;
 
 // Milliseconds, for timers that aren't motion transitions.

@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router";
 import { getCurrentPlayerId, toPublicState, type PlayerState } from "@budget-draft/shared";
 import { GameBoard } from "../components/GameBoard";
 import { HandoffScreen } from "../components/HandoffScreen";
+import { YourTurnBanner } from "../components/YourTurnBanner";
 import { Sheet } from "../components/Sheet";
 import { UrgentNote } from "../components/brand/primitives";
 import { Button, PageShell } from "../components/ui";
@@ -116,8 +117,19 @@ export function LocalGamePage() {
     turnLabel = `${currentPlayer.name}'s turn`;
   }
 
+  // Solo vs bots: "Your turn" when the bots are done. Pass and play has
+  // its own hand-off screen between turns instead.
+  let humanCount = 0;
+  for (const player of game.players) {
+    if (!player.isBot) {
+      humanCount += 1;
+    }
+  }
+  const soloTurn = humanCount === 1 && currentPlayer !== undefined && !currentPlayer.isBot;
+
   return (
     <PageShell>
+      <YourTurnBanner isMyTurn={soloTurn} />
       <GameBoard
         state={toPublicState(game)}
         viewerId={null}

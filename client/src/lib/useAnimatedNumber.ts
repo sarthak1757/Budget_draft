@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { GAME_MOMENT } from "./motion";
 
 // Smoothly counts from the previous value to the new one (e.g. $20 -> $11),
 // so players can see money leave a budget instead of it just changing.
-export function useAnimatedNumber(target: number, durationMs = 600): number {
+export function useAnimatedNumber(target: number, durationMs = GAME_MOMENT.coin * 1000): number {
   const [shown, setShown] = useState(target);
   const fromRef = useRef(target);
 

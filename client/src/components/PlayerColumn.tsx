@@ -1,7 +1,10 @@
+import { motion } from "motion/react";
 import { Avatar } from "./Avatar";
 import { Bot, Check, Gift } from "lucide-react";
 import { findMissingRoles, maxSpendable, pricePaid, type PublicItem, type PublicPlayerState } from "@budget-draft/shared";
+import { GAME_MOMENT, gameTransition } from "../lib/motion";
 import { useAnimatedNumber } from "../lib/useAnimatedNumber";
+import { LeaderGlow } from "./MotionBits";
 import { ICON_STROKE, Label, UrgentNote } from "./brand/primitives";
 
 interface PlayerColumnProps {
@@ -12,6 +15,7 @@ interface PlayerColumnProps {
   justBought?: boolean; // plays a short glow after this player buys
   isHighBidder?: boolean; // auction: holds the current high bid
   requiredRoles?: string[]; // Balanced team: roles to cover. Empty = not playing it.
+  freshItemId?: string | null; // the item that was just bought: its slot bounces in
 }
 
 export function PlayerColumn({
@@ -22,6 +26,7 @@ export function PlayerColumn({
   justBought = false,
   isHighBidder = false,
   requiredRoles = [],
+  freshItemId = null,
 }: PlayerColumnProps) {
   const shownBudget = useAnimatedNumber(player.budget);
   // The active player gets a gold frame and a soft glow; everyone else a hairline.
@@ -34,7 +39,11 @@ export function PlayerColumn({
     >
       <header className="flex min-w-0 items-center gap-2">
         {player.isBot && <Bot size={14} strokeWidth={ICON_STROKE} className="shrink-0 text-gold" aria-label="bot" />}
-        {player.avatar && <Avatar name={player.name} avatar={player.avatar} size="sm" />}
+        {player.avatar && (
+          <LeaderGlow active={isHighBidder}>
+            <Avatar name={player.name} avatar={player.avatar} size="sm" />
+          </LeaderGlow>
+        )}
         <Label className={`truncate ${isCurrentTurn ? "text-ivory" : ""}`}>
           {player.name}
           {isViewer && " · you"}
@@ -43,7 +52,7 @@ export function PlayerColumn({
         {!player.isConnected && <Label className="ml-auto shrink-0 text-gold">Offline</Label>}
       </header>
 
-      <p className="display-serif text-6xl text-ivory tabular-nums sm:text-7xl" aria-label={`Budget $${player.budget}`}>
+      <p className="display-serif self-start text-6xl text-ivory tabular-nums sm:text-7xl" aria-label={`Budget $${player.budget}`} data-budget-for={player.id}>
         ${shownBudget}
       </p>
       <div className="min-h-5">
@@ -52,19 +61,32 @@ export function PlayerColumn({
         {!cantAfford && maxSpendable(player) === 0 && <Label className="text-mist/80">Team complete</Label>}
       </div>
 
-      <TeamSlots team={player.team} requiredRoles={requiredRoles} />
+      <TeamSlots team={player.team} requiredRoles={requiredRoles} playerId={player.id} freshItemId={freshItemId} />
     </section>
   );
 }
 
 // The numbered slots, plus the role chips when playing Balanced team.
 // Also used by the phone layout's "your team" row and team sheet.
-export function TeamSlots({ team, requiredRoles = [] }: { team: (PublicItem | null)[]; requiredRoles?: string[] }) {
+interface TeamSlotsProps {
+  team: (PublicItem | null)[];
+  requiredRoles?: string[];
+  playerId?: string; // marks the slots, so the bought coin knows where to land
+  freshItemId?: string | null; // the item that was just bought: its slot bounces in
+}
+
+export function TeamSlots({ team, requiredRoles = [], playerId, freshItemId = null }: TeamSlotsProps) {
   return (
     <div className="grid gap-3">
       <ol className="grid grid-cols-[minmax(0,1fr)]">
         {team.map((item, index) => (
-          <Slot key={index} index={index} item={item} />
+          <Slot
+            key={index}
+            index={index}
+            item={item}
+            slotId={playerId === undefined ? undefined : `${playerId}:${index}`}
+            fresh={item !== null && item.id === freshItemId}
+          />
         ))}
       </ol>
       {requiredRoles.length > 0 && <RoleChips team={team} requiredRoles={requiredRoles} />}
@@ -83,18 +105,23 @@ export function countFilled(team: (PublicItem | null)[]): number {
   return filled;
 }
 
-// A numbered hairline row that fills in when an item is bought.
-function Slot({ index, item }: { index: number; item: PublicItem | null }) {
+// A numbered hairline row. A just-bought item lands with a small bounce,
+// timed to arrive with the coin.
+function Slot({ index, item, slotId, fresh }: { index: number; item: PublicItem | null; slotId: string | undefined; fresh: boolean }) {
   if (item === null) {
     return (
-      <li className="flex min-h-12 items-center gap-3 border-t border-mist/15 py-2 last:border-b">
+      <li className="flex min-h-12 items-center gap-3 border-t border-mist/15 py-2 last:border-b" data-slot-for={slotId}>
         <Label className="text-mist/70">Slot {index + 1}</Label>
       </li>
     );
   }
   return (
-    <li
-      className={`animate-slot-fill flex min-h-12 items-center gap-2 border-t border-mist/15 py-2 last:border-b ${item.isBench ? "opacity-70" : ""}`}
+    <motion.li
+      data-slot-for={slotId}
+      initial={fresh ? { scale: 0.85, opacity: 0 } : false}
+      animate={fresh ? { scale: [0.85, 1.05, 1], opacity: 1 } : undefined}
+      transition={gameTransition(GAME_MOMENT.slot, GAME_MOMENT.coin * 0.6)}
+      className={`flex min-h-12 items-center gap-2 border-t border-mist/15 py-2 last:border-b ${item.isBench ? "opacity-70" : ""}`}
       title={`${item.name} · ${item.tag} · paid $${pricePaid(item)} (listed $${item.price}) · rating ${item.rating === null ? "hidden" : item.rating}`}
     >
       <Label className="w-5 shrink-0 text-mist/70">{String(index + 1).padStart(2, "0")}</Label>
@@ -109,7 +136,7 @@ function Slot({ index, item }: { index: number; item: PublicItem | null }) {
       ) : (
         <span className="display-serif text-2xl text-ivory tabular-nums">{item.rating}</span>
       )}
-    </li>
+    </motion.li>
   );
 }
 

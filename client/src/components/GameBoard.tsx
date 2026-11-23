@@ -1,4 +1,5 @@
 import { Eye } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useRef, type ReactNode } from "react";
 import {
   getBuyBlockReason,
@@ -9,7 +10,9 @@ import {
   type PublicGameState,
   type TurnMove,
 } from "@budget-draft/shared";
+import { cardExitFor, eventsKey, findPurchase, isPassAlong } from "../lib/boardMoments";
 import { describeEvent } from "../lib/describeEvents";
+import { EASE, GAME_MOMENT, gameTransition } from "../lib/motion";
 import { useIsPhone } from "../lib/useMediaQuery";
 import { isPeekVisible, type PeekedItem } from "../lib/peek";
 import { useGameSounds } from "../lib/useGameSounds";
@@ -17,8 +20,9 @@ import { buzz } from "../store/soundStore";
 import { ICON_STROKE, Label } from "./brand/primitives";
 import { ActionBar } from "./ActionBar";
 import { BidBar } from "./BidBar";
+import { CardStage } from "./CardStage";
+import { CoinFlights } from "./CoinFlights";
 import { Countdown } from "./Countdown";
-import { ItemCard } from "./ItemCard";
 import { MyTeamBar, OpponentStrip, type PlayerBadges } from "./PhoneBoardParts";
 import { PlayerColumn } from "./PlayerColumn";
 import { PowerUpBar } from "./PowerUpBar";
@@ -78,17 +82,15 @@ export function GameBoard({ state, viewerId, canAct, busy = false, turnLabel, pe
     buyBlockReason = getBuyBlockReason(actingPlayer, state.currentItem);
   }
 
-  // Who bought something in the last action (for the glow).
-  let boughtBy: string | null = null;
-  for (const event of state.lastEvents) {
-    if (event.type === "bought") {
-      boughtBy = event.playerId;
-    }
-  }
+  // Who bought what in the last action (for the column bump and the slot bounce).
+  const purchase = findPurchase(state.lastEvents);
+  const boughtBy = purchase === null ? null : purchase.playerId;
+  const isAuction = state.auction !== null;
 
   const badges: PlayerBadges = {
     currentId,
     boughtBy,
+    boughtItemId: purchase === null ? null : purchase.itemId,
     highBidderId: state.auction === null ? null : state.auction.highBidderId,
     cantAffordIds: state.cantAffordIds,
     requiredRoles: state.requiredRoles,
@@ -148,13 +150,15 @@ export function GameBoard({ state, viewerId, canAct, busy = false, turnLabel, pe
     />
   );
 
-  const itemCard = state.currentItem && (
-    <ItemCard
-      key={state.currentItem.id}
+  const itemCard = (
+    <CardStage
       item={state.currentItem}
       roundNumber={state.roundNumber}
       itemsRemaining={state.itemsRemaining}
-      isAuction={state.auction !== null}
+      isAuction={isAuction}
+      highBid={state.auction === null ? null : state.auction.highBid}
+      exit={cardExitFor(state.lastEvents, isAuction)}
+      nudgeKey={isPassAlong(state.lastEvents) ? eventsKey(state.roundNumber, state.lastEvents) : null}
     />
   );
 
@@ -185,6 +189,7 @@ export function GameBoard({ state, viewerId, canAct, busy = false, turnLabel, pe
 
     return (
       <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
+        <CoinFlights state={state} />
         <OpponentStrip players={others} badges={badges} />
         {itemCard}
         {extras}
@@ -211,6 +216,7 @@ export function GameBoard({ state, viewerId, canAct, busy = false, turnLabel, pe
         cantAfford={state.cantAffordIds.includes(player.id)}
         isViewer={player.id === viewerId}
         justBought={boughtBy === player.id}
+        freshItemId={badges.boughtItemId}
         isHighBidder={player.id === badges.highBidderId}
         requiredRoles={state.requiredRoles}
       />
@@ -219,6 +225,7 @@ export function GameBoard({ state, viewerId, canAct, busy = false, turnLabel, pe
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:flex lg:items-start lg:justify-center">
+      <CoinFlights state={state} />
       {state.players.slice(0, half).map(renderColumn)}
 
       <div className="order-first col-span-2 grid gap-3 lg:order-none lg:w-80 lg:shrink-0">
@@ -293,19 +300,42 @@ function BottomDock({ children }: { children: ReactNode }) {
   );
 }
 
-// The next item, as seen with Peek. Only shown to the player who peeked.
+// The next item, as seen with Peek. Only shown to the player who peeked:
+// two curtains part to reveal it.
 function PeekCard({ peeked }: { peeked: PeekedItem }) {
   const item = peeked.item;
+  const part = { duration: GAME_MOMENT.split, ease: EASE.inOut };
   return (
-    <div className="grid gap-1 rounded-[1.25rem] bg-ink-raised p-4 ring-1 ring-gold" aria-live="polite">
-      <Label className="flex items-center gap-2 text-gold">
-        <Eye size={14} strokeWidth={ICON_STROKE} aria-hidden />
-        Next up · only you can see this
-      </Label>
-      <p className="display-serif text-3xl text-ivory">{item.name}</p>
-      <Label className="text-mist">
-        {item.tag} · ${item.price} · rating {item.rating === null ? "hidden" : item.rating}
-      </Label>
+    <div className="relative overflow-hidden rounded-[1.25rem] ring-1 ring-gold" aria-live="polite">
+      <motion.div
+        className="grid gap-1 bg-ink-raised p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={gameTransition(GAME_MOMENT.fade)}
+      >
+        <Label className="flex items-center gap-2 text-gold">
+          <Eye size={14} strokeWidth={ICON_STROKE} aria-hidden />
+          Next up · only you can see this
+        </Label>
+        <p className="display-serif text-3xl text-ivory">{item.name}</p>
+        <Label className="text-mist">
+          {item.tag} · ${item.price} · rating {item.rating === null ? "hidden" : item.rating}
+        </Label>
+      </motion.div>
+      <motion.span
+        aria-hidden
+        className="absolute inset-y-0 left-0 w-1/2 origin-left border-r border-gold/60 bg-ink-hover"
+        initial={{ scaleX: 1 }}
+        animate={{ scaleX: 0 }}
+        transition={part}
+      />
+      <motion.span
+        aria-hidden
+        className="absolute inset-y-0 right-0 w-1/2 origin-right border-l border-gold/60 bg-ink-hover"
+        initial={{ scaleX: 1 }}
+        animate={{ scaleX: 0 }}
+        transition={part}
+      />
     </div>
   );
 }

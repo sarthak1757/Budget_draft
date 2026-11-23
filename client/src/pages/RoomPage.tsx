@@ -1,9 +1,10 @@
 import { Eye, RotateCcw } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import { getCurrentPlayerId, type PublicPlayerState, type RoomSnapshot } from "@budget-draft/shared";
 import { ArrowLink, ICON_STROKE, Label, UrgentNote } from "../components/brand/primitives";
 import { Countdown } from "../components/Countdown";
+import { YourTurnBanner } from "../components/YourTurnBanner";
 import { GameBoard } from "../components/GameBoard";
 import { LobbyView } from "../components/LobbyView";
 import { ReactionBar, ReactionLayer } from "../components/Reactions";
@@ -15,7 +16,6 @@ import { fetchCategories } from "../lib/categories";
 import { getStoredName } from "../lib/playerStorage";
 import { useAsync } from "../lib/useAsync";
 import { useOnlineStore } from "../store/onlineStore";
-import { buzz } from "../store/soundStore";
 
 export function RoomPage() {
   const code = (useParams().code ?? "").toUpperCase();
@@ -207,7 +207,7 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
 
   return (
     <>
-      <TurnAlert isMyTurn={isMyTurn} />
+      <YourTurnBanner isMyTurn={isMyTurn} />
       {watching && <WatchingBanner />}
       <GameBoard
         state={game}
@@ -241,17 +241,4 @@ function WatchingBanner() {
       </p>
     </div>
   );
-}
-
-// Buzzes the phone when your turn starts, for when it's lying on the table.
-// Renders nothing.
-function TurnAlert({ isMyTurn }: { isMyTurn: boolean }) {
-  const wasMyTurn = useRef(isMyTurn);
-  useEffect(() => {
-    if (isMyTurn && !wasMyTurn.current) {
-      buzz("turn");
-    }
-    wasMyTurn.current = isMyTurn;
-  }, [isMyTurn]);
-  return null;
 }
