@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { hasSeenHowToPlay, markHowToPlaySeen } from "../lib/howToPlay";
+import { hasSeenHowToPlay, markHowToPlaySeen } from "../lib/howToPlaySeen";
 
 interface HelpStore {
   open: boolean;

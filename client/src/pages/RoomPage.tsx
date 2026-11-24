@@ -1,5 +1,5 @@
 import { Eye, RotateCcw } from "lucide-react";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import { getCurrentPlayerId, type PublicPlayerState, type RoomSnapshot } from "@budget-draft/shared";
 import { ArrowLink, ICON_STROKE, Label, UrgentNote } from "../components/brand/primitives";
@@ -8,11 +8,12 @@ import { YourTurnBanner } from "../components/YourTurnBanner";
 import { GameBoard } from "../components/GameBoard";
 import { LobbyView } from "../components/LobbyView";
 import { ReactionBar, ReactionLayer } from "../components/Reactions";
-import { ResultsView } from "../components/ResultsView";
 import { ReconnectingOverlay } from "../components/ReconnectingOverlay";
 import { Button, ErrorBox, PageShell, Spinner } from "../components/ui";
 import { VotePanel } from "../components/VotePanel";
 import { fetchCategories } from "../lib/categories";
+import { lazyNamed } from "../lib/lazyNamed";
+import { loadResultsView } from "../lib/lazyPages";
 import { getStoredName } from "../lib/playerStorage";
 import { useAsync } from "../lib/useAsync";
 import { useOnlineStore } from "../store/onlineStore";
@@ -109,9 +110,20 @@ interface RoomContentProps {
   onLeave: () => void;
 }
 
+// Split out of the main chunk; fetched as soon as a game starts (below), so
+// it's ready by the time the results show.
+const ResultsView = lazyNamed(loadResultsView, "ResultsView");
+
 function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentProps) {
   const store = useOnlineStore();
   const game = room.game;
+  const gameStarted = game !== null;
+
+  useEffect(() => {
+    if (gameStarted) {
+      void loadResultsView();
+    }
+  }, [gameStarted]);
 
   if (game === null) {
     return (
@@ -141,25 +153,27 @@ function RoomContent({ room, playerId, categories, busy, onLeave }: RoomContentP
       <>
         <h1 className="display-serif mb-10 text-5xl text-ivory sm:text-7xl">Results</h1>
         {room.results ? (
-          <ResultsView
-            players={game.players}
-            viewerId={playerId}
-            results={room.results}
-            requiredRoles={game.requiredRoles}
-            actions={
-              <>
-                {isHost && (
-                  <Button variant="secondary" onClick={store.rematch} disabled={busy}>
-                    <RotateCcw size={16} strokeWidth={ICON_STROKE} className="mr-2 inline" aria-hidden />
-                    Rematch
+          <Suspense fallback={<Spinner />}>
+            <ResultsView
+              players={game.players}
+              viewerId={playerId}
+              results={room.results}
+              requiredRoles={game.requiredRoles}
+              actions={
+                <>
+                  {isHost && (
+                    <Button variant="secondary" onClick={store.rematch} disabled={busy}>
+                      <RotateCcw size={16} strokeWidth={ICON_STROKE} className="mr-2 inline" aria-hidden />
+                      Rematch
+                    </Button>
+                  )}
+                  <Button variant="ghost" onClick={onLeave}>
+                    Back to home
                   </Button>
-                )}
-                <Button variant="ghost" onClick={onLeave}>
-                  Back to home
-                </Button>
-              </>
-            }
-          />
+                </>
+              }
+            />
+          </Suspense>
         ) : (
           <Spinner />
         )}

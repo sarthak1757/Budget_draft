@@ -93,7 +93,7 @@ export function ResultsView({ players, results, actions, hideShare = false, view
         >
           {namesFor(results.statsWinnerIds, players)}
         </motion.p>
-        <ConfettiBurst />
+        {results.statsWinnerIds.length > 0 && <ConfettiBurst />}
         {results.votingHeld && (
           <div className="grid gap-1">
             <Label className="flex items-center gap-2">

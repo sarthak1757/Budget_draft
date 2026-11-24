@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import { Link } from "react-router";
-import { HelpButton } from "./HowToPlay";
+import { HelpButton } from "./HelpButton";
 import { MuteButton } from "./MuteButton";
 import { Hairline, Label, PILL_CLASSES, UrgentNote, type PillVariant } from "./brand/primitives";
 

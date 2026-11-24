@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import { getCurrentPlayerId, toPublicState, type PlayerState } from "@budget-draft/shared";
 import { GameBoard } from "../components/GameBoard";
@@ -10,6 +10,7 @@ import { Button, PageShell } from "../components/ui";
 import { VotePanel } from "../components/VotePanel";
 import { describeEvent } from "../lib/describeEvents";
 import { needsHandoff, whoNeedsDevice } from "../lib/handoff";
+import { loadLocalResultsPage } from "../lib/lazyPages";
 import { useBotTurns } from "../lib/useBotTurns";
 import { useLocalGameStore } from "../store/localGameStore";
 
@@ -37,6 +38,11 @@ export function LocalGamePage() {
   // Must run before any early return (React hooks always run in the same order).
   const botIsThinking = useBotTurns(game, playBotTurn);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
+  // The results page is split out of the main chunk: fetch it while the
+  // game is played, so it shows without a pause at the end.
+  useEffect(() => {
+    void loadLocalResultsPage();
+  }, []);
 
   if (!game) {
     return <Navigate to="/" replace />;
