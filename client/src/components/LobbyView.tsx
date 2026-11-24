@@ -1,7 +1,8 @@
 import { Check, Crown, Share2, UserX } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useState } from "react";
 import { MAX_PLAYERS, MAX_SLOTS, MIN_HUMANS_FOR_VOTE, MIN_SLOTS, type AvatarId, type Category, type RoomSnapshot } from "@budget-draft/shared";
+import { useLayoutAnimations } from "../lib/layoutAnimations";
 import { DISTANCE, enterTransition, exitTransition, SPRING } from "../lib/motion";
 import { isTouchDevice } from "../lib/useMediaQuery";
 import { Avatar } from "./Avatar";
@@ -45,6 +46,10 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
   const managing = room.players.find((player) => player.id === managingId);
   const inviteLink = `${window.location.origin}/join/${room.code}`;
   const settings = room.settings;
+  // The rows slide up into a gap with a layout animation. RoomPage starts
+  // that download; if the rows were already showing when it arrived, they
+  // mount again to pick it up (initial={false}: no entrance plays, so it's invisible).
+  const layoutReady = useLayoutAnimations() !== null;
 
   // Phones get the system share sheet (WhatsApp, Messages...). Laptops copy.
   const canShare = typeof navigator.share === "function" && isTouchDevice();
@@ -112,9 +117,9 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
         {/* New players slide in; someone who leaves or is removed fades out
             and the rows below slide up into the gap. */}
         <ul className="grid gap-4">
-          <AnimatePresence initial={false} mode="popLayout">
+          <AnimatePresence key={layoutReady ? "layout" : "plain"} initial={false} mode="popLayout">
             {room.players.map((player) => (
-              <motion.li
+              <m.li
                 key={player.id}
                 layout="position"
                 initial={{ opacity: 0, x: -DISTANCE.row }}
@@ -127,7 +132,7 @@ export function LobbyView({ room, playerId, categories, busy, onChangeSettings, 
                   // The host can manage everyone else.
                   onManage={isHost && player.id !== playerId ? () => setManagingId(player.id) : null}
                 />
-              </motion.li>
+              </m.li>
             ))}
           </AnimatePresence>
         </ul>
@@ -292,7 +297,7 @@ function LobbyPlayerRow({ player, isMe, onManage }: LobbyPlayerRowProps) {
         {player.isReady ? (
           <Label className="flex items-center gap-1 text-gold">
             {/* The tick pops in when a player turns ready. */}
-            <motion.span
+            <m.span
               key="tick"
               className="inline-flex"
               initial={{ scale: 0.3, opacity: 0 }}
@@ -300,7 +305,7 @@ function LobbyPlayerRow({ player, isMe, onManage }: LobbyPlayerRowProps) {
               transition={SPRING.pop}
             >
               <Check size={14} strokeWidth={ICON_STROKE} aria-hidden />
-            </motion.span>
+            </m.span>
             Ready
           </Label>
         ) : (

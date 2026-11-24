@@ -12,6 +12,7 @@ import { ReconnectingOverlay } from "../components/ReconnectingOverlay";
 import { Button, ErrorBox, PageShell, Spinner } from "../components/ui";
 import { VotePanel } from "../components/VotePanel";
 import { fetchCategories } from "../lib/categories";
+import { loadLayoutAnimations } from "../lib/layoutAnimations";
 import { lazyNamed } from "../lib/lazyNamed";
 import { loadResultsView } from "../lib/lazyPages";
 import { getStoredName } from "../lib/playerStorage";
@@ -34,6 +35,12 @@ export function RoomPage() {
       enterRoom(code, name);
     }
   }, [code, name, currentCode, enterRoom]);
+
+  // The lobby's rows and the "Back online" toast use layout animations,
+  // which download separately: start that now, while the room connects.
+  useEffect(() => {
+    loadLayoutAnimations();
+  }, []);
 
   if (name === "") {
     // Opened a room link without a name yet: ask for one first.

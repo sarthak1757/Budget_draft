@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useReducedMotion, useSpring } from "motion/react";
+import { m, useMotionValue, useReducedMotion, useSpring } from "motion/react";
 import { useEffect, useState } from "react";
 import { DISTANCE, DURATION, EASE, SPRING, STAGGER } from "../../lib/motion";
 import { ChromeBlob } from "./ChromeBlob";
@@ -38,7 +38,7 @@ function Letters({ word, startAt, riseIn }: { word: string; startAt: number; ris
   return (
     <>
       {word.split("").map((letter, index) => (
-        <motion.span
+        <m.span
           key={index}
           className="inline-block"
           initial={riseIn ? { y: "0.35em", opacity: 0 } : false}
@@ -46,7 +46,7 @@ function Letters({ word, startAt, riseIn }: { word: string; startAt: number; ris
           transition={{ duration: DURATION.letterRise, ease: EASE.out, delay: (startAt + index) * STAGGER.letter }}
         >
           {letter}
-        </motion.span>
+        </m.span>
       ))}
     </>
   );
@@ -107,8 +107,8 @@ function ParallaxBlob() {
   }, [reduce]);
 
   return (
-    <motion.div className="absolute top-[4%] left-[52%] z-0 w-[44vw] max-w-80 sm:left-[50%]" style={{ x, y }}>
+    <m.div className="absolute top-[4%] left-[52%] z-0 w-[44vw] max-w-80 sm:left-[50%]" style={{ x, y }}>
       <ChromeBlob shape="pebble" className="w-full" />
-    </motion.div>
+    </m.div>
   );
 }

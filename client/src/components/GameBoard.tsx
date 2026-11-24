@@ -1,5 +1,5 @@
 import { Eye } from "lucide-react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { useEffect, useRef, type ReactNode } from "react";
 import {
   getBuyBlockReason,
@@ -307,7 +307,7 @@ function PeekCard({ peeked }: { peeked: PeekedItem }) {
   const part = { duration: GAME_MOMENT.split, ease: EASE.inOut };
   return (
     <div className="relative overflow-hidden rounded-[1.25rem] ring-1 ring-gold" aria-live="polite">
-      <motion.div
+      <m.div
         className="grid gap-1 bg-ink-raised p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -321,15 +321,15 @@ function PeekCard({ peeked }: { peeked: PeekedItem }) {
         <Label className="text-mist">
           {item.tag} · ${item.price} · rating {item.rating === null ? "hidden" : item.rating}
         </Label>
-      </motion.div>
-      <motion.span
+      </m.div>
+      <m.span
         aria-hidden
         className="absolute inset-y-0 left-0 w-1/2 origin-left border-r border-gold/60 bg-ink-hover"
         initial={{ scaleX: 1 }}
         animate={{ scaleX: 0 }}
         transition={part}
       />
-      <motion.span
+      <m.span
         aria-hidden
         className="absolute inset-y-0 right-0 w-1/2 origin-right border-l border-gold/60 bg-ink-hover"
         initial={{ scaleX: 1 }}

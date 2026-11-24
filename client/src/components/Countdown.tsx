@@ -1,4 +1,4 @@
-import { motion, MotionConfig } from "motion/react";
+import { m, MotionConfig } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { playSound } from "../store/soundStore";
 import { Label, UrgentNote } from "./brand/primitives";
@@ -106,7 +106,7 @@ function TimerBar({ end, totalMs, className }: { end: number; totalMs: number; c
   const remaining = Math.max(0, end - Date.now());
   return (
     <MotionConfig reducedMotion="never">
-      <motion.div
+      <m.div
         key={end}
         className={`h-full origin-left ${className}`}
         initial={{ scaleX: Math.min(1, remaining / totalMs) }}

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { Suspense, useState } from "react";
 import { Route, Routes, useLocation } from "react-router";
 import { lazyNamed } from "./lib/lazyNamed";
@@ -34,7 +34,7 @@ export function App() {
       {/* Pages fade and slide between routes. The old page leaves quickly
           before the new one arrives (mode="wait"), so they never overlap. */}
       <AnimatePresence mode="wait" initial={false}>
-        <motion.div
+        <m.div
           key={location.pathname}
           initial={{ opacity: 0, y: DISTANCE.page }}
           animate={{ opacity: 1, y: 0, transition: enterTransition }}
@@ -60,7 +60,7 @@ export function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
-        </motion.div>
+        </m.div>
       </AnimatePresence>
     </>
   );

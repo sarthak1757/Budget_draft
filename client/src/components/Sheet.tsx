@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { useEffect, useRef, type MouseEvent, type ReactNode } from "react";
 import { DURATION, EASE, SPRING } from "../lib/motion";
 import { useIsPhone } from "../lib/useMediaQuery";
@@ -53,7 +53,7 @@ export function Sheet({ open, onClose, title, children, className = "" }: SheetP
       {open && (
         // Phones: slides up from the bottom edge on a spring.
         // Wider screens: a centred dialog that scales in from 96%.
-        <motion.div
+        <m.div
           initial={isPhone ? { y: "100%", opacity: 0 } : { scale: 0.96, opacity: 0 }}
           animate={isPhone ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
           transition={isPhone ? { y: SPRING.sheet, opacity: { duration: DURATION.exit } } : { duration: DURATION.modal, ease: EASE.out }}
@@ -73,7 +73,7 @@ export function Sheet({ open, onClose, title, children, className = "" }: SheetP
             </button>
           </div>
           {children}
-        </motion.div>
+        </m.div>
       )}
     </dialog>
   );

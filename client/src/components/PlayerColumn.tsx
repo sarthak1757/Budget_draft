@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { Avatar } from "./Avatar";
 import { Bot, Check, Gift } from "lucide-react";
 import { findMissingRoles, maxSpendable, pricePaid, type PublicItem, type PublicPlayerState } from "@budget-draft/shared";
@@ -116,7 +116,7 @@ function Slot({ index, item, slotId, fresh }: { index: number; item: PublicItem 
     );
   }
   return (
-    <motion.li
+    <m.li
       data-slot-for={slotId}
       initial={fresh ? { scale: 0.85, opacity: 0 } : false}
       animate={fresh ? { scale: [0.85, 1.05, 1], opacity: 1 } : undefined}
@@ -136,7 +136,7 @@ function Slot({ index, item, slotId, fresh }: { index: number; item: PublicItem 
       ) : (
         <span className="display-serif text-2xl text-ivory tabular-nums">{item.rating}</span>
       )}
-    </motion.li>
+    </m.li>
   );
 }
 

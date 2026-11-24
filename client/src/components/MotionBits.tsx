@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useAnimate, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useAnimate, useReducedMotion } from "motion/react";
 import { useEffect, useRef, type ReactNode } from "react";
 import { odometerDigits } from "../lib/boardMoments";
 import { DURATION, EASE, GAME_MOMENT, gameTransition, SPRING } from "../lib/motion";
@@ -39,7 +39,7 @@ export function RollingNumber({ value, className = "" }: { value: number; classN
       <span className="sr-only">{value}</span>
       <AnimatePresence initial={false} mode="popLayout">
         {odometerDigits(value).map(({ key, digit }) => (
-          <motion.span
+          <m.span
             key={key}
             aria-hidden
             className="inline-block"
@@ -49,7 +49,7 @@ export function RollingNumber({ value, className = "" }: { value: number; classN
             transition={gameTransition(GAME_MOMENT.bump)}
           >
             {digit}
-          </motion.span>
+          </m.span>
         ))}
       </AnimatePresence>
     </span>
@@ -62,7 +62,7 @@ export function LeaderGlow({ active, children }: { active: boolean; children: Re
     <span className="relative inline-grid shrink-0 place-items-center">
       <AnimatePresence>
         {active && (
-          <motion.span
+          <m.span
             aria-hidden
             className="absolute -inset-1.5 rounded-full bg-gold/60 blur-md"
             initial={{ opacity: 0, scale: 0.6 }}

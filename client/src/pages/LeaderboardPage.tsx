@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { LeaderboardEntry } from "@budget-draft/shared";
 import { Avatar } from "../components/Avatar";
 import { ArrowLink, Label } from "../components/brand/primitives";
@@ -42,7 +42,7 @@ export function LeaderboardPage() {
             </thead>
             <tbody>
               {leaderboard.data.map((entry, index) => (
-                <motion.tr
+                <m.tr
                   key={entry.name}
                   className="border-b border-mist/15"
                   initial={{ opacity: 0, y: DISTANCE.row }}
@@ -61,7 +61,7 @@ export function LeaderboardPage() {
                   <td className="display-serif px-3 py-4 text-right text-3xl text-ivory tabular-nums">{entry.wins}</td>
                   <td className="px-3 py-4 text-right text-mist tabular-nums">{entry.gamesPlayed}</td>
                   <td className="py-4 pl-3 text-right text-mist tabular-nums">{entry.bestScore ?? "—"}</td>
-                </motion.tr>
+                </m.tr>
               ))}
             </tbody>
           </table>

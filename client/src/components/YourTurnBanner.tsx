@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { DISTANCE, DURATION, enterTransition, exitTransition } from "../lib/motion";
 import { buzz } from "../store/soundStore";
@@ -34,7 +34,7 @@ export function YourTurnBanner({ isMyTurn }: { isMyTurn: boolean }) {
   return (
     <AnimatePresence>
       {shownAt !== null && (
-        <motion.div
+        <m.div
           key={shownAt}
           aria-hidden
           className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+0.75rem)] z-40 flex justify-center px-4"
@@ -43,7 +43,7 @@ export function YourTurnBanner({ isMyTurn }: { isMyTurn: boolean }) {
           exit={{ y: slide, opacity: 0, transition: exitTransition }}
         >
           <span className="display-serif rounded-full bg-gold px-7 py-2 text-3xl text-ink shadow-glow">Your turn</span>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

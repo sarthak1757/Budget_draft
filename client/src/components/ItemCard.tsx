@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { PublicItem } from "@budget-draft/shared";
 import { GAME_MOMENT, gameTransition, SPRING } from "../lib/motion";
 import { ChromeBlob } from "./brand/ChromeBlob";
@@ -65,21 +65,21 @@ export function ItemCard({ item, roundNumber, itemsRemaining, isAuction = false,
 function DiscountStrike({ price }: { price: number }) {
   return (
     <>
-      <motion.span
+      <m.span
         aria-hidden
         className="absolute top-8 -left-1 h-[3px] w-[calc(100%+0.5rem)] origin-left -rotate-12 rounded-full bg-ink md:top-10"
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
         transition={gameTransition(GAME_MOMENT.bump)}
       />
-      <motion.span
+      <m.span
         className="display-serif absolute -top-2 -right-4 grid size-10 place-items-center rounded-full bg-ivory text-xl text-ink shadow-glow"
         initial={{ scale: 0.4, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={SPRING.pop}
       >
         ${price}
-      </motion.span>
+      </m.span>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useAnimate, useIsPresent, usePresenceData, useReducedMotion, type Variants } from "motion/react";
+import { AnimatePresence, m, useAnimate, useIsPresent, usePresenceData, useReducedMotion, type Variants } from "motion/react";
 import { useEffect, useState, type Ref } from "react";
 import { discountedPrice, type PublicItem } from "@budget-draft/shared";
 import type { CardExit } from "../lib/boardMoments";
@@ -135,7 +135,7 @@ function FlyingCard({ item, roundNumber, itemsRemaining, isAuction, highBid, nud
   } else {
     // Face down first, then it turns over. A mystery item wobbles once it lands.
     face = (
-      <motion.div
+      <m.div
         className="relative"
         style={{ transformStyle: "preserve-3d", transformPerspective: 1000 }}
         initial={{ rotateY: 180 }}
@@ -143,25 +143,25 @@ function FlyingCard({ item, roundNumber, itemsRemaining, isAuction, highBid, nud
         transition={gameTransition(GAME_MOMENT.flip)}
         onAnimationComplete={() => setTurned(true)}
       >
-        <motion.div
+        <m.div
           style={{ backfaceVisibility: "hidden" }}
           animate={item.isMystery ? { x: [0, -5, 5, -4, 4, -2, 0] } : undefined}
           transition={{ duration: GAME_MOMENT.shake, delay: GAME_MOMENT.flip }}
         >
           {card}
-        </motion.div>
+        </m.div>
         {!turned && (
           <CardBack
             className="absolute inset-0"
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
           />
         )}
-      </motion.div>
+      </m.div>
     );
   }
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       className={leaving ? "relative z-10" : "relative"}
       // Slides up off the deck. Opacity stays out of it (it would flatten the
@@ -173,7 +173,7 @@ function FlyingCard({ item, roundNumber, itemsRemaining, isAuction, highBid, nud
       exit="exit"
     >
       <div ref={nudgeScope}>{face}</div>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -183,21 +183,21 @@ function VetoSplit({ children }: { children: React.ReactNode }) {
   const fall = { duration: GAME_MOMENT.split, ease: EASE.in };
   return (
     <div className="relative" aria-hidden>
-      <motion.div
+      <m.div
         style={{ clipPath: "polygon(0 0, 56% 0, 44% 100%, 0 100%)" }}
         animate={{ x: -DISTANCE.deck, y: DISTANCE.deck, rotate: -6, opacity: 0 }}
         transition={fall}
       >
         {children}
-      </motion.div>
-      <motion.div
+      </m.div>
+      <m.div
         className="absolute inset-0"
         style={{ clipPath: "polygon(56% 0, 100% 0, 100% 100%, 44% 100%)" }}
         animate={{ x: DISTANCE.deck, y: DISTANCE.deck, rotate: 6, opacity: 0 }}
         transition={fall}
       >
         {children}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

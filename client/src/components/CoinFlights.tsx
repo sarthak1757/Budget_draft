@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { PublicGameState } from "@budget-draft/shared";
@@ -78,7 +78,7 @@ export function CoinFlights({ state }: { state: PublicGameState }) {
   return createPortal(
     <>
       {flights.map((flight) => (
-        <motion.div
+        <m.div
           key={flight.id}
           aria-hidden
           className="display-serif pointer-events-none fixed z-50 grid place-items-center rounded-full bg-gold text-lg text-ink shadow-glow"
@@ -94,7 +94,7 @@ export function CoinFlights({ state }: { state: PublicGameState }) {
           onAnimationComplete={() => setFlights((current) => current.filter((f) => f.id !== flight.id))}
         >
           ${flight.price}
-        </motion.div>
+        </m.div>
       ))}
     </>,
     document.body,

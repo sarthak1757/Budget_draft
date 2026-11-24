@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { DURATION, EASE } from "../lib/motion";
 import { Label } from "./brand/primitives";
 
@@ -7,7 +7,7 @@ import { Label } from "./brand/primitives";
 // by itself as soon as the server has sent the latest state.
 export function ReconnectingOverlay() {
   return (
-    <motion.div
+    <m.div
       className="fixed inset-0 z-50 grid place-items-center bg-ink/75 p-6 backdrop-blur-sm"
       role="status"
       aria-live="assertive"
@@ -15,7 +15,7 @@ export function ReconnectingOverlay() {
       animate={{ opacity: 1 }}
       transition={{ duration: DURATION.modal }}
     >
-      <motion.div
+      <m.div
         initial={{ scale: 0.96, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: DURATION.modal, ease: EASE.out }}
@@ -23,7 +23,7 @@ export function ReconnectingOverlay() {
         <span className="size-7 animate-spin rounded-full border border-mist/15 border-t-gold" aria-hidden />
         <p className="display-serif text-3xl text-ivory">Reconnecting…</p>
         <Label className="text-mist/80">Catching up with the game</Label>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 }

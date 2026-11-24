@@ -1,4 +1,6 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
+import { useEffect } from "react";
+import { loadLayoutAnimations } from "../lib/layoutAnimations";
 import { DISTANCE, enterTransition, exitTransition } from "../lib/motion";
 import { useToastStore, type ToastTone } from "../store/toastStore";
 import { UrgentNote } from "./brand/primitives";
@@ -16,6 +18,14 @@ export function Toaster() {
   const toasts = useToastStore((store) => store.toasts);
   const dismissToast = useToastStore((store) => store.dismissToast);
   const slide = useReducedMotion() === true ? 0 : -DISTANCE.banner; // reduce motion: fade only
+  // Toasts below one that's dismissed slide up (layout animation): download
+  // that with the first toast. The first one is on top, so it never needs it.
+  const hasToasts = toasts.length > 0;
+  useEffect(() => {
+    if (hasToasts) {
+      loadLayoutAnimations();
+    }
+  }, [hasToasts]);
 
   return (
     <div
@@ -24,7 +34,7 @@ export function Toaster() {
     >
       <AnimatePresence initial={false}>
         {toasts.map((toast) => (
-          <motion.button
+          <m.button
             key={toast.id}
             type="button"
             layout="position"
@@ -35,7 +45,7 @@ export function Toaster() {
             className={`pointer-events-auto max-w-sm rounded-full bg-ink-raised px-5 py-3 text-left text-sm font-medium shadow-xl ring-1 ring-mist/15 ${TONE_CLASSES[toast.tone]}`}
         >
             {toast.tone === "warning" ? <UrgentNote>{toast.message}</UrgentNote> : toast.message}
-          </motion.button>
+          </m.button>
         ))}
       </AnimatePresence>
     </div>
